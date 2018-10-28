@@ -1,5 +1,8 @@
 package com.polarbearr.todo;
 
+import android.content.Context;
+import android.content.Intent;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
@@ -9,9 +12,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -20,8 +26,8 @@ import java.util.List;
 import static com.polarbearr.todo.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 
-public class MainActivity extends AppCompatActivity {
-    private ViewPager mViewPager;
+public class MainActivity extends AppCompatActivity{
+    private static ViewPager mViewPager;
     private static long backPressedTime = 0;
 
     static final String TODO_KEY = "0";
@@ -47,20 +53,50 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
-        ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
-        ListFragment fragment = new ListFragment();
-        Bundle bundle = new Bundle();
-        bundle.putInt(TODO_KEY, 0);
-        fragment.setArguments(bundle);
-        adapter.addItem(fragment);
+        setPagerAdapter();
 
-        fragment = new ListFragment();
-        bundle = new Bundle();
-        bundle.putInt(TODO_KEY, 1);
-        fragment.setArguments(bundle);
-        adapter.addItem(fragment);
+        // 플로팅버튼 설정
+        FloatingActionButton button = findViewById(R.id.fab);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), WriteActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        DisplayMetrics metrics = getMetrics(getBaseContext());
+        setViewSize(metrics, button);
+    }
+
+    // 어댑터 설정
+    public void setPagerAdapter(){
+        ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
+
+        for(int i = 0; i < 2; i++) {
+            ListFragment fragment = new ListFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt(TODO_KEY, i);
+            fragment.setArguments(bundle);
+            adapter.addItem(fragment);
+        }
 
         mViewPager.setAdapter(adapter);
+    }
+
+    // 화면 크기 얻기
+    public DisplayMetrics getMetrics(Context context){
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context
+                .getSystemService(Context.WINDOW_SERVICE);
+        windowManager.getDefaultDisplay().getMetrics(metrics);
+        return metrics;
+    }
+
+    // 버튼 위치 설정
+    public static void setViewSize(DisplayMetrics metrics, View view){
+        view.setX(metrics.widthPixels * 8 / 10);
+        view.setY(metrics.heightPixels * 8 / 10);
     }
 
     @Override
@@ -121,6 +157,5 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
             toast.cancel();
         }
-
     }
 }

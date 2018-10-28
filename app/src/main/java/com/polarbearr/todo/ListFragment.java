@@ -1,5 +1,6 @@
 package com.polarbearr.todo;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,17 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import static com.polarbearr.todo.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.DatabaseHelper.CONTENT;
 import static com.polarbearr.todo.DatabaseHelper.DATEVALUE;
 import static com.polarbearr.todo.DatabaseHelper.TITLE;
 import static com.polarbearr.todo.DatabaseHelper.TODOITEM;
-import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.MainActivity.TODO_KEY;
 
 public class ListFragment extends Fragment {
+    private static Bundle loadedData;
 
-    static Bundle loadedData;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -32,30 +31,7 @@ public class ListFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
 
         Bundle bundle = getArguments();
-        int fragmentType = bundle.getInt(TODO_KEY);
-
-        Bundle item1 = new Bundle();
-        item1.putParcelable(TODOITEM, new TodoItem("title1", "content", "dateValue"));
-
-//        DatabaseHelper.insertData(TODO_TABLE, item1);
-//        DatabaseHelper.insertData(COMPLETED_TABLE, item1);
-        if(fragmentType == 0){
-            // 할 일 데이터베이스에서 불러오기
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
-                }
-            }).start();
-        }else if(fragmentType == 1){
-            // 완료한 일 데이터베이스에서 불러오기
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
-                }
-            }).start();
-        }
+        processBundle(bundle);
 
         TodoAdapter adapter = new TodoAdapter(getContext());
 
@@ -73,7 +49,38 @@ public class ListFragment extends Fragment {
         }
 
         recyclerView.setAdapter(adapter);
-
         return rootView;
+    }
+
+    public void processBundle(Bundle bundle){
+        int fragmentType = bundle.getInt(TODO_KEY);
+
+        if(fragmentType == 0){
+            // 할 일 데이터베이스에서 불러오기
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
+                }
+            }).start();
+        }else if(fragmentType == 1){
+            // 완료한 일 데이터베이스에서 불러오기
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
+                }
+            }).start();
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 }

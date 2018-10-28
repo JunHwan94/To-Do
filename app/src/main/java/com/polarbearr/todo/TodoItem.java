@@ -20,7 +20,7 @@ public class TodoItem implements Parcelable {
         date = in.readString();
     }
 
-    public static final Creator<TodoItem> CREATOR = new Creator<TodoItem>() {
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
         @Override
         public TodoItem createFromParcel(Parcel in) {
             return new TodoItem(in);

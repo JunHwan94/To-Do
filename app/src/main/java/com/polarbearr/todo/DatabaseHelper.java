@@ -95,7 +95,6 @@ public class DatabaseHelper {
             cursor.close();
             System.out.println("데이터베이스 조회됨");
         }
-
         return data;
     }
 
@@ -114,6 +113,8 @@ public class DatabaseHelper {
     public static void deleteData(String tableName, String title){
         if(database != null){
             String sql = "delete from " + tableName + " where title=" + title;
+
+            database.execSQL(sql);
         }
     }
 }
