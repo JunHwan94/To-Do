@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity{
 
     static final String TODO_KEY = "0";
     static final String TODO_DB = "tododb";
+    static final int TODO_WRITE_REQUEST_CODE = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +46,6 @@ public class MainActivity extends AppCompatActivity{
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Set up the ViewPager with the sections adapter.
         mViewPager = findViewById(R.id.container);
 
         TabLayout tabLayout = findViewById(R.id.tabs);
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), WriteActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, TODO_WRITE_REQUEST_CODE);
             }
         });
 
@@ -72,10 +72,11 @@ public class MainActivity extends AppCompatActivity{
     // 어댑터 설정
     public void setPagerAdapter(){
         ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
-
+        ListFragment fragment;
+        Bundle bundle;
         for(int i = 0; i < 2; i++) {
-            ListFragment fragment = new ListFragment();
-            Bundle bundle = new Bundle();
+            fragment = new ListFragment();
+            bundle = new Bundle();
             bundle.putInt(TODO_KEY, i);
             fragment.setArguments(bundle);
             adapter.addItem(fragment);
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity{
     // 버튼 위치 설정
     public static void setViewSize(DisplayMetrics metrics, View view){
         view.setX(metrics.widthPixels * 8 / 10);
-        view.setY(metrics.heightPixels * 8 / 10);
+        view.setY(metrics.heightPixels * 85 / 100);
     }
 
     @Override

@@ -24,20 +24,9 @@
         android:layout_height="19dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/date"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title"
         tools:text="내용" />
 
-    <TextView
-        android:id="@+id/date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="10dp"
-        android:textColor="#000000"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/content"
-        tools:text="날짜" />
 </android.support.constraint.ConstraintLayout>

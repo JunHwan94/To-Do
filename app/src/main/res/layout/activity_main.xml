@@ -60,6 +60,7 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         app:backgroundTint="@color/colorPrimaryDark"
+        app:elevation="0dp"
         app:srcCompat="@android:drawable/ic_menu_add" />
 
 </android.support.design.widget.CoordinatorLayout>
