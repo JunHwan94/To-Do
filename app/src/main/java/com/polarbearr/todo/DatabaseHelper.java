@@ -13,8 +13,6 @@ public class DatabaseHelper {
     private static SQLiteDatabase database;
     public static final String TODO_TABLE = "todolist";
     public static final String COMPLETED_TABLE = "completedlist";
-    public static final String TITLE = "title";
-    public static final String CONTENT = "content";
     public static final String TODO_ITEM = "todoitem";
 
     // 데이터베이스 오픈
@@ -36,7 +34,7 @@ public class DatabaseHelper {
                 "   _id integer PRIMARY KEY AUTOINCREMENT," +
 //                "   id integer, " +
                 "   title text, " +
-                "   content text " +
+                "   content text" +
                 ")";
 
         database.execSQL(sql);
@@ -91,14 +89,14 @@ public class DatabaseHelper {
 
     public static void deleteData(String tableName, int id){
         if(database != null){
-            String sql = "delete from " + tableName + " where id = " + id;
+            String sql = "delete from " + tableName + " where _id = " + id;
             database.execSQL(sql);
         }
     }
 
     public static void updateData(String tableName, int id, String title, String content){
         if(database != null){
-            String sql = "update " + tableName + " set title = '" + title + "' content = '" + content + "' where id = " + id;
+            String sql = "update " + tableName + " set title = \'" + title + "\', content = \'" + content + "\' where _id = " + id;
             database.execSQL(sql);
         }
     }

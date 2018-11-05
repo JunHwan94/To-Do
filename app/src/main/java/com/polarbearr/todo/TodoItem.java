@@ -8,7 +8,6 @@ public class TodoItem implements Parcelable {
     String content;
     int id;
 
-
     public TodoItem(String title, String content) {
         this.title = title;
         this.content = content;
@@ -20,7 +19,6 @@ public class TodoItem implements Parcelable {
         this.content = content;
         this.id = id;
     }
-
 
     protected TodoItem(Parcel in) {
         title = in.readString();

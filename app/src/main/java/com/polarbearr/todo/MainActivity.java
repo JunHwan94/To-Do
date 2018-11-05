@@ -43,30 +43,13 @@ public class MainActivity extends AppCompatActivity{
         DatabaseHelper.createTable(TODO_TABLE);
         DatabaseHelper.createTable(COMPLETED_TABLE);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         mViewPager = findViewById(R.id.container);
-
         TabLayout tabLayout = findViewById(R.id.tabs);
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
         setPagerAdapter();
-
-        // 플로팅버튼 설정
-        FloatingActionButton button = findViewById(R.id.fab);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), WriteActivity.class);
-                startActivityForResult(intent, TODO_WRITE_REQUEST_CODE);
-            }
-        });
-
-        DisplayMetrics metrics = getMetrics(getBaseContext());
-        setViewSize(metrics, button);
     }
 
     // 어댑터 설정
@@ -74,6 +57,7 @@ public class MainActivity extends AppCompatActivity{
         ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
         ListFragment fragment;
         Bundle bundle;
+
         for(int i = 0; i < 2; i++) {
             fragment = new ListFragment();
             bundle = new Bundle();
@@ -85,20 +69,20 @@ public class MainActivity extends AppCompatActivity{
         mViewPager.setAdapter(adapter);
     }
 
-    // 화면 크기 얻기
-    public DisplayMetrics getMetrics(Context context){
-        DisplayMetrics metrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
-        windowManager.getDefaultDisplay().getMetrics(metrics);
-        return metrics;
-    }
-
-    // 버튼 위치 설정
-    public static void setViewSize(DisplayMetrics metrics, View view){
-        view.setX(metrics.widthPixels * 8 / 10);
-        view.setY(metrics.heightPixels * 85 / 100);
-    }
+//    // 화면 크기 얻기
+//    public DisplayMetrics getMetrics(Context context){
+//        DisplayMetrics metrics = new DisplayMetrics();
+//        WindowManager windowManager = (WindowManager) context
+//                .getSystemService(Context.WINDOW_SERVICE);
+//        windowManager.getDefaultDisplay().getMetrics(metrics);
+//        return metrics;
+//    }
+//
+//    // 버튼 위치 설정
+//    public static void setButtonPosition(DisplayMetrics metrics, View view){
+//        view.setX(metrics.widthPixels * 8 / 10);
+//        view.setY(metrics.heightPixels * 85 / 100);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
