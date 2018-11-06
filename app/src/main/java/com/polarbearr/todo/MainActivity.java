@@ -27,7 +27,7 @@ import static com.polarbearr.todo.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 
 public class MainActivity extends AppCompatActivity{
-    private static ViewPager mViewPager;
+    private static ViewPager pager;
     private static long backPressedTime = 0;
 
     static final String TODO_KEY = "0";
@@ -43,11 +43,11 @@ public class MainActivity extends AppCompatActivity{
         DatabaseHelper.createTable(TODO_TABLE);
         DatabaseHelper.createTable(COMPLETED_TABLE);
 
-        mViewPager = findViewById(R.id.container);
-        TabLayout tabLayout = findViewById(R.id.tabs);
+        pager = findViewById(R.id.container);
+//        TabLayout tabLayout = findViewById(R.id.tabs);
 
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
+//        pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+//        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager));
 
         setPagerAdapter();
     }
@@ -66,44 +66,14 @@ public class MainActivity extends AppCompatActivity{
             adapter.addItem(fragment);
         }
 
-        mViewPager.setAdapter(adapter);
+        pager.setAdapter(adapter);
     }
-
-//    // 화면 크기 얻기
-//    public DisplayMetrics getMetrics(Context context){
-//        DisplayMetrics metrics = new DisplayMetrics();
-//        WindowManager windowManager = (WindowManager) context
-//                .getSystemService(Context.WINDOW_SERVICE);
-//        windowManager.getDefaultDisplay().getMetrics(metrics);
-//        return metrics;
-//    }
-//
-//    // 버튼 위치 설정
-//    public static void setButtonPosition(DisplayMetrics metrics, View view){
-//        view.setX(metrics.widthPixels * 8 / 10);
-//        view.setY(metrics.heightPixels * 85 / 100);
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     static class ListPagerAdapter extends FragmentStatePagerAdapter {

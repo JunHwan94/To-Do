@@ -24,7 +24,7 @@ public class ListFragment extends Fragment {
     static final String TITLE_KEY = "titlekey";
     static final String CONTENT_KEY = "contentkey";
     static final String ID_KEY = "idkey";
-    static final String ITEM_COUNT_KEY = "itemkey";
+    static final String DATE_KEY = "datekey";
 
     private Bundle loadedData;
     private RecyclerView recyclerView;
@@ -96,9 +96,10 @@ public class ListFragment extends Fragment {
 
                 String title = itemBundle.getString(TITLE_KEY);
                 String content = itemBundle.getString(CONTENT_KEY);
+                String date = itemBundle.getString(DATE_KEY);
                 int id = itemBundle.getInt(ID_KEY);
 
-                item = new TodoItem(title, content, id);
+                item = new TodoItem(title, content, date, id);
                 adapter.addItem(item);
             }
 
@@ -108,13 +109,15 @@ public class ListFragment extends Fragment {
                     TodoItem item = adapter.getItem(position);
                     String title = item.getTitle();
                     String content = item.getContent();
+                    String date = item.getDate();
                     int id = item.getId();
-                    int count = adapter.getItemCount();
+//                    int count = adapter.getItemCount();
 
                     Intent intent = new Intent(getContext().getApplicationContext(), WriteActivity.class);
                     intent.putExtra(TITLE_KEY, title);
                     intent.putExtra(CONTENT_KEY, content);
                     intent.putExtra(ID_KEY, id);
+                    intent.putExtra(DATE_KEY, date);
 //                    intent.putExtra(ITEM_COUNT_KEY, count);  저장 후 writeactivity 종료안할거면 전달
 
                     startActivityForResult(intent, TODO_WRITE_REQUEST_CODE);

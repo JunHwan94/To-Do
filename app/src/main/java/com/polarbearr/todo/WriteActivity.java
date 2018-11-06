@@ -1,28 +1,35 @@
 package com.polarbearr.todo;
 
 import android.app.Activity;
-import android.content.Context;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import static com.polarbearr.todo.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
+import static com.polarbearr.todo.ListFragment.DATE_KEY;
 import static com.polarbearr.todo.ListFragment.ID_KEY;
 import static com.polarbearr.todo.ListFragment.TITLE_KEY;
 
 public class WriteActivity extends AppCompatActivity {
     private EditText tvTitle;
     private EditText tvContent;
+    private Button dateSelectButton;
 
     private String title;
     private String content;
+    private String date;
     private int id;
 
     private boolean saveFlag = false;
@@ -41,18 +48,55 @@ public class WriteActivity extends AppCompatActivity {
 
         title = intent.getStringExtra(TITLE_KEY);
         content = intent.getStringExtra(CONTENT_KEY);
+        date = intent.getStringExtra(DATE_KEY);
         id = intent.getIntExtra(ID_KEY, 0);
 
         Button deleteButton = findViewById(R.id.deleteButton);
-        // 목록의 아이템을 눌러서 넘어왔을 때 뷰 처리
+        dateSelectButton = findViewById(R.id.dateSelectButton);
+        // 목록의 아이템을 눌러서 WriteActivity 실행했을 때 뷰 처리
         if(id != 0){
             tvTitle.setText(title);
             tvContent.setText(content);
-        } else deleteButton.setVisibility(View.INVISIBLE);
+            dateSelectButton.setText(date);
+        }
+        // + 버튼을 눌러서 WriteActivity 실행했을 때
+        else deleteButton.setVisibility(View.INVISIBLE);
 
         Button saveButton = findViewById(R.id.saveButton);
         setSaveButtonListener(saveButton);
         setDeleteButtonListener(deleteButton);
+
+        // 날짜 선택 버튼 이벤트 처리
+        setDateSelectButtonListener(dateSelectButton);
+
+    }
+
+    private void setDateSelectButtonListener(final Button dateSelectButton) {
+        dateSelectButton.setOnClickListener(new View.OnClickListener() {
+            Calendar cal = new GregorianCalendar();
+            int sYear = cal.get(Calendar.YEAR);
+            int sMonth = cal.get(Calendar.MONTH);
+            int sDay = cal.get(Calendar.DAY_OF_MONTH);
+
+            @Override
+            public void onClick(View v) {
+                new DatePickerDialog(WriteActivity.this, dateSetListener, sYear, sMonth, sDay).show();
+            }
+
+            DatePickerDialog.OnDateSetListener dateSetListener =
+                    new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                            sYear = year;
+                            sMonth = month;
+                            sDay = dayOfMonth;
+                            String date = sYear + " - " + (sMonth+1) + " - " + sDay;
+
+                            dateSelectButton.setText(date);
+                            Toast.makeText(getBaseContext(), date.replace(" ", ""), Toast.LENGTH_SHORT).show();
+                        }
+                    };
+        });
     }
 
     // 삭제버튼 이벤트 처리
@@ -84,6 +128,7 @@ public class WriteActivity extends AppCompatActivity {
 
                 title = tvTitle.getText().toString();
                 content = tvContent.getText().toString();
+                date = dateSelectButton.getText().toString();
 
                 // 작성 내용이 없을 때
                 if(title.equals("") && content.equals("")){
@@ -98,14 +143,14 @@ public class WriteActivity extends AppCompatActivity {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            DatabaseHelper.updateData(TODO_TABLE, id, title, content);
+                            DatabaseHelper.updateData(TODO_TABLE, id, title, content, date);
                         }
                     }).start();
                     databaseChangeFlag = true;
 //                    Toast.makeText(getBaseContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
                     onBackPressed();
                 } else {    // 새로운 할일을 작성할 때
-                    TodoItem item = new TodoItem(title, content);
+                    TodoItem item = new TodoItem(title, content, date);
                     giveData.putParcelable(TODO_ITEM, item);
 
                     new Thread(new Runnable() {

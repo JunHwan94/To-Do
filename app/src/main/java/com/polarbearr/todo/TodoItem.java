@@ -7,22 +7,26 @@ public class TodoItem implements Parcelable {
     String title;
     String content;
     int id;
+    String date;
 
-    public TodoItem(String title, String content) {
+    public TodoItem(String title, String content, String date) {
         this.title = title;
         this.content = content;
+        this.date = date;
     }
 
     // DB에서 조회할 때는 id 값 넣어주기
-    public TodoItem(String title, String content, int id) {
+    public TodoItem(String title, String content, String date, int id) {
         this.title = title;
         this.content = content;
+        this.date = date;
         this.id = id;
     }
 
     protected TodoItem(Parcel in) {
         title = in.readString();
         content = in.readString();
+        date = in.readString();
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
@@ -53,6 +57,14 @@ public class TodoItem implements Parcelable {
         this.content = content;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     public int getId() {
         return id;
     }
@@ -70,5 +82,6 @@ public class TodoItem implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(title);
         dest.writeString(content);
+        dest.writeString(date);
     }
 }

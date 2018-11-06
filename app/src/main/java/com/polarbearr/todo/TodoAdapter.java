@@ -65,6 +65,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView tvName;
         TextView tvContent;
+        TextView tvDate;
 
         OnItemClickListener listener;
 
@@ -73,6 +74,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
 
             tvName = itemView.findViewById(R.id.title);
             tvContent = itemView.findViewById(R.id.content);
+            tvDate = itemView.findViewById(R.id.date);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -89,6 +91,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
         public void setItem(TodoItem item){
             tvName.setText(item.getTitle());
             tvContent.setText(item.getContent());
+            tvDate.setText(item.getDate());
         }
 
         public void setOnItemClickListener(OnItemClickListener listener){

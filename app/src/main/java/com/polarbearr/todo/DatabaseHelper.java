@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
+import static com.polarbearr.todo.ListFragment.DATE_KEY;
 import static com.polarbearr.todo.ListFragment.ID_KEY;
 import static com.polarbearr.todo.ListFragment.TITLE_KEY;
 
@@ -32,9 +33,9 @@ public class DatabaseHelper {
         String sql = "create table if not exists " + tableName +
                 "(" +
                 "   _id integer PRIMARY KEY AUTOINCREMENT," +
-//                "   id integer, " +
                 "   title text, " +
                 "   content text" +
+                "   dateValue text" +
                 ")";
 
         database.execSQL(sql);
@@ -45,7 +46,7 @@ public class DatabaseHelper {
         Bundle data = new Bundle();
         Cursor cursor;
 
-        String sql = "select title, content, _id from " +
+        String sql = "select title, content, _id, dateValue from " +
                 tableName +
                 " order by _id";
 
@@ -59,12 +60,12 @@ public class DatabaseHelper {
                 String title = cursor.getString(0);
                 String content = cursor.getString(1);
                 int id = cursor.getInt(2);
+                String date = cursor.getString(3);
 
                 bundle.putString(TITLE_KEY, title);
                 bundle.putString(CONTENT_KEY, content);
                 bundle.putInt(ID_KEY, id);
-
-                System.out.println("조회한 데이터 : " + title + " " + content);
+                bundle.putString(DATE_KEY, date);
 
                 data.putBundle(TODO_ITEM + i, bundle);
 
@@ -80,9 +81,11 @@ public class DatabaseHelper {
         TodoItem item = bundle.getParcelable(TODO_ITEM);
         String title = item.title;
         String content = item.content;
+        String date = item.date;
+
         if(database != null) {
-            String sql = "insert into " + tableName + "(title, content) values(?, ?)";
-            Object[] params = {title, content};
+            String sql = "insert into " + tableName + "(title, content, dateValue) values(?, ?, ?)";
+            Object[] params = {title, content, date};
             database.execSQL(sql, params);
         }
     }
@@ -94,9 +97,9 @@ public class DatabaseHelper {
         }
     }
 
-    public static void updateData(String tableName, int id, String title, String content){
+    public static void updateData(String tableName, int id, String title, String content, String date){
         if(database != null){
-            String sql = "update " + tableName + " set title = \'" + title + "\', content = \'" + content + "\' where _id = " + id;
+            String sql = "update " + tableName + " set title = \'" + title + "\', content = \'" + content + "\', dateValue = \'" + date + "\' where _id = " + id;
             database.execSQL(sql);
         }
     }
