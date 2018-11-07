@@ -2,20 +2,28 @@ package com.polarbearr.todo;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
-    Context context;
+    static Context context;
     List<TodoItem> items = new ArrayList<>();
 
     OnItemClickListener listener;
+
+    private static final String TITLE = "title";
+    private static final String CONTENT = "content";
+
 
     public static interface OnItemClickListener{
         public void onItemClick(ViewHolder holder, View view, int position);
@@ -63,7 +71,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder{
-        TextView tvName;
+        TextView tvTitle;
         TextView tvContent;
         TextView tvDate;
 
@@ -72,7 +80,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
         public ViewHolder(View itemView){
             super(itemView);
 
-            tvName = itemView.findViewById(R.id.title);
+            tvTitle = itemView.findViewById(R.id.title);
             tvContent = itemView.findViewById(R.id.content);
             tvDate = itemView.findViewById(R.id.date);
 
@@ -86,16 +94,42 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
                     }
                 }
             });
+
+            DisplayMetrics metrics = getMetrics(context);
+            setViewSize(metrics, tvTitle, TITLE);
+            setViewSize(metrics, tvContent, CONTENT);
         }
 
         public void setItem(TodoItem item){
-            tvName.setText(item.getTitle());
+            tvTitle.setText(item.getTitle());
             tvContent.setText(item.getContent());
             tvDate.setText(item.getDate());
         }
 
         public void setOnItemClickListener(OnItemClickListener listener){
             this.listener = listener;
+        }
+
+        public static DisplayMetrics getMetrics(Context context){
+            DisplayMetrics metrics = new DisplayMetrics();
+            WindowManager windowManager = (WindowManager) context
+                    .getSystemService(Context.WINDOW_SERVICE);
+            windowManager.getDefaultDisplay().getMetrics(metrics);
+            return metrics;
+        }
+
+        public static void setViewSize(DisplayMetrics metrics, View view, String type){
+            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams)view.getLayoutParams();
+            switch(type){
+                case TITLE:
+                    params.width = metrics.widthPixels * 9 / 10;
+                    break;
+                case CONTENT:
+                    params.width = metrics.widthPixels * 2 / 5;
+                    break;
+            }
+
+            view.setLayoutParams(params);
         }
     }
 }

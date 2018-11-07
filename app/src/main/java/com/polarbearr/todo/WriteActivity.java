@@ -20,6 +20,7 @@ import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
 import static com.polarbearr.todo.ListFragment.DATE_KEY;
 import static com.polarbearr.todo.ListFragment.ID_KEY;
+import static com.polarbearr.todo.ListFragment.NOTHING;
 import static com.polarbearr.todo.ListFragment.TITLE_KEY;
 
 public class WriteActivity extends AppCompatActivity {
@@ -36,6 +37,7 @@ public class WriteActivity extends AppCompatActivity {
     private boolean databaseChangeFlag = false;
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
+    private static final String SELECT_DATE = "== 날짜 선택 ==";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +59,7 @@ public class WriteActivity extends AppCompatActivity {
         if(id != 0){
             tvTitle.setText(title);
             tvContent.setText(content);
-            dateSelectButton.setText(date);
+            if(!date.equals(NOTHING)) dateSelectButton.setText(date);
         }
         // + 버튼을 눌러서 WriteActivity 실행했을 때
         else deleteButton.setVisibility(View.INVISIBLE);
@@ -68,7 +70,6 @@ public class WriteActivity extends AppCompatActivity {
 
         // 날짜 선택 버튼 이벤트 처리
         setDateSelectButtonListener(dateSelectButton);
-
     }
 
     private void setDateSelectButtonListener(final Button dateSelectButton) {
@@ -90,10 +91,19 @@ public class WriteActivity extends AppCompatActivity {
                             sYear = year;
                             sMonth = month;
                             sDay = dayOfMonth;
-                            String date = sYear + " - " + (sMonth+1) + " - " + sDay;
+                            String date;
+
+                            if(sMonth < 10){
+                                date = sYear + " - 0" + (sMonth + 1) + " - " + sDay;
+                                if(sDay < 10)
+                                    date = sYear + " - 0" + (sMonth + 1) + " - 0" + sDay;
+                            } else {
+                                date = sYear + " - " + (sMonth + 1) + " - " + sDay;
+                                if(sDay < 10)
+                                    date = sYear + " - " + (sMonth + 1) + " - 0" + sDay;
+                            }
 
                             dateSelectButton.setText(date);
-                            Toast.makeText(getBaseContext(), date.replace(" ", ""), Toast.LENGTH_SHORT).show();
                         }
                     };
         });
@@ -129,6 +139,8 @@ public class WriteActivity extends AppCompatActivity {
                 title = tvTitle.getText().toString();
                 content = tvContent.getText().toString();
                 date = dateSelectButton.getText().toString();
+                // 날짜 선택 안했을 때
+                if(date.equals(SELECT_DATE)) date = null;
 
                 // 작성 내용이 없을 때
                 if(title.equals("") && content.equals("")){

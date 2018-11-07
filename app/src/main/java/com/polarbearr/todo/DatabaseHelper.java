@@ -48,7 +48,7 @@ public class DatabaseHelper {
 
         String sql = "select title, content, _id, dateValue from " +
                 tableName +
-                " order by _id";
+                " order by dateValue desc";
 
         if(database != null){
             Bundle bundle;

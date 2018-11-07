@@ -2,7 +2,6 @@ package com.polarbearr.todo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
@@ -56,15 +55,19 @@ public class MainActivity extends AppCompatActivity{
     public void setPagerAdapter(){
         ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
         ListFragment fragment;
-        Bundle bundle;
+//        Bundle bundle;
 
-        for(int i = 0; i < 2; i++) {
-            fragment = new ListFragment();
-            bundle = new Bundle();
-            bundle.putInt(TODO_KEY, i);
-            fragment.setArguments(bundle);
-            adapter.addItem(fragment);
-        }
+        fragment = new ListFragment();
+        adapter.addItem(fragment);
+
+        // 완료 목록 있을 때
+//        for(int i = 0; i < 2; i++) {
+//            fragment = new ListFragment();
+//            bundle = new Bundle();
+//            bundle.putInt(TODO_KEY, i);
+//            fragment.setArguments(bundle);
+//            adapter.addItem(fragment);
+//        }
 
         pager.setAdapter(adapter);
     }

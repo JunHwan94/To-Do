@@ -25,6 +25,7 @@ public class ListFragment extends Fragment {
     static final String CONTENT_KEY = "contentkey";
     static final String ID_KEY = "idkey";
     static final String DATE_KEY = "datekey";
+    static final String NOTHING = "없음";
 
     private Bundle loadedData;
     private RecyclerView recyclerView;
@@ -52,9 +53,12 @@ public class ListFragment extends Fragment {
         DisplayMetrics metrics = getMetrics(getContext());
         setButtonPosition(metrics, fab);
 
-        // 프래그먼트 구분해서 데이터 설정
-        Bundle bundle = getArguments();
-        if(bundle != null) processBundle(bundle);
+        // 할 일 데이터베이스에서 불러오기
+        loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
+
+        // 완료한 일 있을 때 프래그먼트 구분해서 데이터 설정
+//        Bundle bundle = getArguments();
+//        if(bundle != null) processBundle(bundle);
 
         // 리사이클러뷰에 어댑터 설정
         setTodoAdapter();
@@ -62,29 +66,30 @@ public class ListFragment extends Fragment {
         return rootView;
     }
 
-    public void processBundle(final Bundle bundle){
-        int fragmentType = bundle.getInt(TODO_KEY);
-
-        switch(fragmentType){
-            case 0:
-                // 할 일 데이터베이스에서 불러오기
-                loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
-                break;
-            case 1:
-                loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
-                fab.setVisibility(View.INVISIBLE);
-                // 완료한 일 데이터베이스에서 불러오기
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try{
-//                            loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
-//                        } catch(Exception e){}
-//                    }
-//                }).start();
-                break;
-        }
-    }
+// 완료한 일 있을 때
+//    public void processBundle(final Bundle bundle){
+//        int fragmentType = bundle.getInt(TODO_KEY);
+//
+//        switch(fragmentType){
+//            case 0:
+//                // 할 일 데이터베이스에서 불러오기
+//                loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
+//                break;
+//            case 1:
+//                loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
+//                fab.setVisibility(View.INVISIBLE);
+//                // 완료한 일 데이터베이스에서 불러오기
+////                new Thread(new Runnable() {
+////                    @Override
+////                    public void run() {
+////                        try{
+////                            loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
+////                        } catch(Exception e){}
+////                    }
+////                }).start();
+//                break;
+//        }
+//    }
 
     public void setTodoAdapter(){
         final TodoAdapter adapter = new TodoAdapter(getContext());
@@ -97,6 +102,10 @@ public class ListFragment extends Fragment {
                 String title = itemBundle.getString(TITLE_KEY);
                 String content = itemBundle.getString(CONTENT_KEY);
                 String date = itemBundle.getString(DATE_KEY);
+                // 날짜 선택안한 데이터 불러오면 없음으로 표시
+                try{
+                    if(date.equals("null")) date = NOTHING;
+                } catch(Exception e){ date = NOTHING; }
                 int id = itemBundle.getInt(ID_KEY);
 
                 item = new TodoItem(title, content, date, id);
