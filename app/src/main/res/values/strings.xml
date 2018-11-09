@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">Todo</string>
+    <string name="app_name">To Do</string>
     <string name="tab_text_1">할 일 목록</string>
     <string name="tab_text_2">완료 목록</string>
 
-    <string name="finish_toast">뒤로가기 버튼을 한 번 더 누르시면\n앱이 종료됩니다</string>
+    <string name="finish_toast">뒤로가기 버튼을 한 번 더 누르시면\n종료됩니다</string>
     <string name="save_toast">저장 완료</string>
-    <string name="notsave_toast">내용을 입력하세요</string>
+    <string name="notsave_toast">제목을 입력하세요</string>
     <string name="delete_toast">삭제 완료</string>
 
     <string name="edit">편집</string>
@@ -13,5 +13,9 @@
     <string name="delete">삭제</string>
 
     <string name="deadline">기한</string>
+    <string name="no_deadline">기한 없음</string>
     <string name="select_date">== 날짜 선택 ==</string>
+
+    <string name="app_ad_id">ca-app-pub-4270520106393473~2526720796</string>
+    <string name="banner_id">ca-app-pub-4270520106393473/5698845865</string>
 </resources>

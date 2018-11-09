@@ -19,12 +19,14 @@ import static com.polarbearr.todo.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.MainActivity.TODO_KEY;
 import static com.polarbearr.todo.MainActivity.TODO_WRITE_REQUEST_CODE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
+import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
 public class ListFragment extends Fragment {
     static final String TITLE_KEY = "titlekey";
     static final String CONTENT_KEY = "contentkey";
     static final String ID_KEY = "idkey";
     static final String DATE_KEY = "datekey";
+    static final String ITEM_COUNT_KEY = "itemcountkey";
     static final String NOTHING = "없음";
 
     private Bundle loadedData;
@@ -103,9 +105,7 @@ public class ListFragment extends Fragment {
                 String content = itemBundle.getString(CONTENT_KEY);
                 String date = itemBundle.getString(DATE_KEY);
                 // 날짜 선택안한 데이터 불러오면 없음으로 표시
-                try{
-                    if(date.equals("null")) date = NOTHING;
-                } catch(Exception e){ date = NOTHING; }
+                if(date.equals(DATE_NOT_SELECTED)) date = NOTHING;
                 int id = itemBundle.getInt(ID_KEY);
 
                 item = new TodoItem(title, content, date, id);
@@ -120,14 +120,14 @@ public class ListFragment extends Fragment {
                     String content = item.getContent();
                     String date = item.getDate();
                     int id = item.getId();
-//                    int count = adapter.getItemCount();
+                    int count = adapter.getItemCount();
 
                     Intent intent = new Intent(getContext().getApplicationContext(), WriteActivity.class);
                     intent.putExtra(TITLE_KEY, title);
                     intent.putExtra(CONTENT_KEY, content);
                     intent.putExtra(ID_KEY, id);
                     intent.putExtra(DATE_KEY, date);
-//                    intent.putExtra(ITEM_COUNT_KEY, count);  저장 후 writeactivity 종료안할거면 전달
+                    intent.putExtra(ITEM_COUNT_KEY, count); // 저장 후 writeactivity 종료안할거면 전달
 
                     startActivityForResult(intent, TODO_WRITE_REQUEST_CODE);
                 }

@@ -13,7 +13,7 @@ import static com.polarbearr.todo.ListFragment.TITLE_KEY;
 public class DatabaseHelper {
     private static SQLiteDatabase database;
     public static final String TODO_TABLE = "todolist";
-    public static final String COMPLETED_TABLE = "completedlist";
+//    public static final String COMPLETED_TABLE = "completedlist";
     public static final String TODO_ITEM = "todoitem";
 
     // 데이터베이스 오픈
