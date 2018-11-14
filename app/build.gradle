@@ -5,8 +5,8 @@ android {
     defaultConfig {
         applicationId "com.polarbearr.todo"
         minSdkVersion 23
-        targetSdkVersion 26
-        versionCode 3
+        targetSdkVersion 27
+        versionCode 4
         versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

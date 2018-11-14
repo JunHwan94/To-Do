@@ -2,16 +2,19 @@ package com.polarbearr.todo;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.util.Calendar;
@@ -30,7 +33,9 @@ public class WriteActivity extends AppCompatActivity {
     private EditText tvTitle;
     private EditText tvContent;
     private Button dateSelectButton;
-    private CheckBox checkBox;
+    private CheckBox dCheckBox;
+    private Button timeSelectButton;
+    private CheckBox nCheckBox;
 
     private String title;
     private String content;
@@ -41,8 +46,12 @@ public class WriteActivity extends AppCompatActivity {
     private boolean databaseChangeFlag = false;
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
-    private static final String SELECT_DATE = "== 날짜 선택 ==";
+    private static final String SELECT_DATE = "-- 날짜 선택 --";
     static final String DATE_NOT_SELECTED = "9999 - 12 - 31";
+    static final String INSERT_TYPE = "insert";
+    static final String UPDATE_TYPE = "update";
+    static final String DATE_TYPE = "date";
+    static final String NOTICE_TYPE = "notice";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,60 +59,113 @@ public class WriteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_write);
 
         Intent intent = getIntent();
-
-        tvTitle = findViewById(R.id.title);
-        tvContent = findViewById(R.id.content);
-        checkBox = findViewById(R.id.checkBox);
-
         title = intent.getStringExtra(TITLE_KEY);
         content = intent.getStringExtra(CONTENT_KEY);
         date = intent.getStringExtra(DATE_KEY);
         id = intent.getIntExtra(ID_KEY, 0);
 
+        tvTitle = findViewById(R.id.title);
+        tvContent = findViewById(R.id.content);
+        Button deleteButton = findViewById(R.id.deleteButton);
+        Button saveButton = findViewById(R.id.saveButton);
+        dateSelectButton = findViewById(R.id.dateSelectButton);
+        dCheckBox = findViewById(R.id.dCheckBox);
+        timeSelectButton = findViewById(R.id.timeSelectButton);
+        nCheckBox = findViewById(R.id.nCheckBox);
+
         // 새 할일 작성 할 경우
         if(id == 0) id = intent.getIntExtra(ITEM_COUNT_KEY, 0);
 
-        // 체크박스 클릭이벤트
-        setCheckBoxListener(checkBox);
-
-        Button deleteButton = findViewById(R.id.deleteButton);
-        dateSelectButton = findViewById(R.id.dateSelectButton);
         // 목록의 아이템을 눌러서 WriteActivity 실행했을 때 뷰 처리
         if(id != 0){
             tvTitle.setText(title);
             tvContent.setText(content);
-            if(!date.equals(NOTHING)) dateSelectButton.setText(date);
+            if(!date.equals(NOTHING)) {
+                dateSelectButton.setText(date);
+            } else {    // 기한 없을 때 체크박스 미리 체크상태로, 날짜선택 버튼 사용불가상태로
+                dCheckBox.setChecked(true);
+                dateSelectButton.setEnabled(false);
+                dateSelectButton.setTextColor(Color.LTGRAY);
+            }
         }
         // + 버튼을 눌러서 WriteActivity 실행했을 때
         else deleteButton.setVisibility(View.INVISIBLE);
 
-        Button saveButton = findViewById(R.id.saveButton);
+        // 저장 버튼 이벤트
         setSaveButtonListener(saveButton);
+
+        // 삭제 버튼 이벤트
         setDeleteButtonListener(deleteButton);
 
         // 날짜 선택 버튼 이벤트 처리
-        setDateSelectButtonListener(dateSelectButton);
+        setDateSelectButtonListener();
+
+        // 기한 없음 체크박스 클릭이벤트
+        setCheckBoxListener(dCheckBox, DATE_TYPE);
+
+        // 시간 선택 버튼 이벤트 처리
+        setTimeSelectButtonListener();
+
+        // 알림설정 체크박스 클릭이벤트
+        setCheckBoxListener(nCheckBox, NOTICE_TYPE);
+    }
+
+    private void setTimeSelectButtonListener(){
+        timeSelectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new TimePickerDialog(WriteActivity.this, timeSetListener, 0, 0, DateFormat.is24HourFormat(getBaseContext())).show();
+            }
+
+            TimePickerDialog.OnTimeSetListener timeSetListener =
+                    new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            String noticeTime = "오전 " + hourOfDay + " : " + minute;
+                            if(12 < hourOfDay){
+                                int hour = hourOfDay - 12;
+                                noticeTime = "오후 " + hour + " : " + minute;
+                            }
+                            timeSelectButton.setText(noticeTime);
+                        }
+                    };
+        });
     }
 
     // 체크박스 클릭 이벤트 처리
-    private void setCheckBoxListener(final CheckBox checkBox){
+    private void setCheckBoxListener(final CheckBox checkBox, final String type){
         checkBox.setClickable(true);
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(checkBox.isChecked()) {
-                    dateSelectButton.setEnabled(false);
-                    dateSelectButton.setTextColor(Color.LTGRAY);
-                } else {
-                    dateSelectButton.setEnabled(true);
-                    dateSelectButton.setTextColor(Color.BLACK);
+                switch (type){
+                    case DATE_TYPE:
+                        if(checkBox.isChecked()) {
+                            dateSelectButton.setEnabled(false);
+                            dateSelectButton.setTextColor(Color.LTGRAY);
+                        } else {
+                            dateSelectButton.setEnabled(true);
+                            dateSelectButton.setTextColor(Color.BLACK);
+                        }
+                        break;
+                    case NOTICE_TYPE:
+                        if(!checkBox.isChecked()) {
+                            timeSelectButton.setEnabled(false);
+                            timeSelectButton.setVisibility(View.INVISIBLE);
+                        } else {
+                            timeSelectButton.setEnabled(true);
+                            timeSelectButton.setVisibility(View.VISIBLE);
+                            timeSelectButton.setText(R.string.select_time);
+                        }
+                        break;
                 }
+
             }
         });
     }
 
     // 날짜 선택 버튼 이벤트 처리
-    private void setDateSelectButtonListener(final Button dateSelectButton) {
+    private void setDateSelectButtonListener() {
         final String buttonText = dateSelectButton.getText().toString();
         dateSelectButton.setOnClickListener(new View.OnClickListener() {
             Calendar cal = new GregorianCalendar();
@@ -155,7 +217,6 @@ public class WriteActivity extends AppCompatActivity {
                         DatabaseHelper.deleteData(TODO_TABLE, id);
                     }
                 }).start();
-//                Toast.makeText(getBaseContext(), R.string.delete_toast, Toast.LENGTH_SHORT).show();
                 databaseChangeFlag = true;
                 onBackPressed();
             }
@@ -169,50 +230,55 @@ public class WriteActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tvTitle.clearFocus();
-                tvContent.clearFocus();
-                hideKeyboard(activity);
+//                tvTitle.clearFocus();
+//                tvContent.clearFocus();
+//                hideKeyboard(activity);
 
                 title = tvTitle.getText().toString();
                 content = tvContent.getText().toString();
                 date = dateSelectButton.getText().toString();
                 // 기한 없음 체크했을 때
-                if(checkBox.isChecked()) date = DATE_NOT_SELECTED;
+                if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
 
-                // 날짜 선택 안했을 때
-                if(date.equals(SELECT_DATE))
-                    Toast.makeText(getBaseContext(), "날짜를 선택하세요", Toast.LENGTH_SHORT).show();
                 // 제목 없을 때
-                else if (title.equals(""))
-                        Toast.makeText(getBaseContext(), R.string.notsave_toast, Toast.LENGTH_SHORT).show();
+                if (title.equals(""))
+                        Toast.makeText(getBaseContext(), R.string.typetitle_toast, Toast.LENGTH_SHORT).show();
+                // 날짜 선택 안했을 때
+                else if(date.equals(SELECT_DATE))
+                    Toast.makeText(getBaseContext(), R.string.dateselect_toast, Toast.LENGTH_SHORT).show();
                 // 수정할 때
                 else if (id != 0 || saveFlag == true) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            DatabaseHelper.updateData(TODO_TABLE, id, title, content, date);
-                        }
-                    }).start();
-                    databaseChangeFlag = true;
-                    Toast.makeText(getBaseContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
-//                    onBackPressed();
+                    TodoItem item = new TodoItem(title, content, date, id);
+                    processData(item, UPDATE_TYPE);
+                    onBackPressed();
+                    //TODO: 수정, 새 작성할때 저장하면서 알람매니저로 추가
                 }
                 // 새로운 할일을 작성할 때
                 else {
                     TodoItem item = new TodoItem(title, content, date);
-                    giveData.putParcelable(TODO_ITEM, item);
-
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            DatabaseHelper.insertData(TODO_TABLE, giveData);
-                        }
-                    }).start();
-                    databaseChangeFlag = true;
-                    saveFlag = true;
-                    Toast.makeText(getBaseContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
-//                   onBackPressed();
+                    processData(item, INSERT_TYPE);
+                    onBackPressed();
                 }
+            }
+
+            public void processData(TodoItem item, final String type){
+                giveData.putParcelable(TODO_ITEM, item);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        switch (type){
+                            case INSERT_TYPE:
+                                DatabaseHelper.insertData(TODO_TABLE, giveData);
+                                saveFlag = true;
+                                break;
+                            case UPDATE_TYPE:
+                                DatabaseHelper.updateData(TODO_TABLE, giveData);
+                                break;
+                        }
+                    }
+                }).start();
+                databaseChangeFlag = true;
+//                Toast.makeText(getBaseContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
             }
         });
     }

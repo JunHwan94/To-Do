@@ -14,10 +14,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import static com.polarbearr.todo.DatabaseHelper.TODO_ITEM;
-import static com.polarbearr.todo.MainActivity.TODO_KEY;
-import static com.polarbearr.todo.MainActivity.TODO_WRITE_REQUEST_CODE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
 import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
@@ -28,6 +27,7 @@ public class ListFragment extends Fragment {
     static final String DATE_KEY = "datekey";
     static final String ITEM_COUNT_KEY = "itemcountkey";
     static final String NOTHING = "없음";
+    static final int WRITE_REQUEST_CODE = 101;
 
     private Bundle loadedData;
     private RecyclerView recyclerView;
@@ -49,7 +49,7 @@ public class ListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), WriteActivity.class);
-                startActivityForResult(intent, TODO_WRITE_REQUEST_CODE);
+                startActivityForResult(intent, WRITE_REQUEST_CODE);
             }
         });
         DisplayMetrics metrics = getMetrics(getContext());
@@ -84,9 +84,7 @@ public class ListFragment extends Fragment {
 ////                new Thread(new Runnable() {
 ////                    @Override
 ////                    public void run() {
-////                        try{
-////                            loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
-////                        } catch(Exception e){}
+////                        loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
 ////                    }
 ////                }).start();
 //                break;
@@ -129,7 +127,7 @@ public class ListFragment extends Fragment {
                     intent.putExtra(DATE_KEY, date);
                     intent.putExtra(ITEM_COUNT_KEY, count); // 저장 후 writeactivity 종료안할거면 전달
 
-                    startActivityForResult(intent, TODO_WRITE_REQUEST_CODE);
+                    startActivityForResult(intent, WRITE_REQUEST_CODE);
                 }
             });
 
@@ -149,7 +147,7 @@ public class ListFragment extends Fragment {
     // 버튼 위치 설정
     public static void setButtonPosition(DisplayMetrics metrics, View view){
         view.setX(metrics.widthPixels * 8 / 10);
-        view.setY(metrics.heightPixels * 8 / 10);
+        view.setY(metrics.heightPixels * 75 / 100);
     }
 
     @Override
@@ -171,9 +169,8 @@ public class ListFragment extends Fragment {
             if(databaseChangeFlag == true) {
                 loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
                 setTodoAdapter();
-//                Toast.makeText(getContext(), "리사이클러뷰 업데이트함", Toast.LENGTH_SHORT).show();
-            } else ;
-//                Toast.makeText(getContext(), "리사이클러뷰 업데이트 안함", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

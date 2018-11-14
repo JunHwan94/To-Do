@@ -34,11 +34,12 @@ public class DatabaseHelper {
                 "(" +
                 "   _id integer PRIMARY KEY AUTOINCREMENT," +
                 "   title text, " +
-                "   content text" +
+                "   content text, " +
                 "   dateValue text" +
                 ")";
-
-        database.execSQL(sql);
+        if(database != null) {
+            database.execSQL(sql);
+        }
     }
 
     // 데이터 조회
@@ -77,6 +78,7 @@ public class DatabaseHelper {
         return data;
     }
 
+    // 행 삽입
     public static void insertData(String tableName, Bundle bundle){
         TodoItem item = bundle.getParcelable(TODO_ITEM);
         String title = item.title;
@@ -90,6 +92,7 @@ public class DatabaseHelper {
         }
     }
 
+    // 행 삭제
     public static void deleteData(String tableName, int id){
         if(database != null){
             String sql = "delete from " + tableName + " where _id = " + id;
@@ -97,7 +100,14 @@ public class DatabaseHelper {
         }
     }
 
-    public static void updateData(String tableName, int id, String title, String content, String date){
+    // 데이터 업데이트
+    public static void updateData(String tableName, Bundle bundle){
+        TodoItem item = bundle.getParcelable(TODO_ITEM);
+        String title = item.getTitle();
+        String content = item.getContent();
+        String date = item.getDate();
+        int id = item.getId();
+
         if(database != null){
             String sql = "update " + tableName + " set title = \'" + title + "\', content = \'" + content + "\', dateValue = \'" + date + "\' where _id = " + id;
             database.execSQL(sql);

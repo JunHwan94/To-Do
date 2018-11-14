@@ -1,5 +1,10 @@
 package com.polarbearr.todo;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.provider.ContactsContract;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 
@@ -16,6 +21,8 @@ import com.google.android.gms.ads.AdView;
 //import java.util.ArrayList;
 //import java.util.List;
 
+import java.util.Calendar;
+
 import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 
 public class MainActivity extends AppCompatActivity{
@@ -23,8 +30,7 @@ public class MainActivity extends AppCompatActivity{
     private static long backPressedTime = 0;
 
     static final String TODO_KEY = "0";
-    static final String TODO_DB = "tododb";
-    static final int TODO_WRITE_REQUEST_CODE = 101;
+    static final String TODO_DB = "todoDB";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +38,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         DatabaseHelper.openDatabase(getApplicationContext(), TODO_DB);
+//        DatabaseHelper.dropTable();
         DatabaseHelper.createTable(TODO_TABLE);
 //        DatabaseHelper.createTable(COMPLETED_TABLE);
 
@@ -41,10 +48,42 @@ public class MainActivity extends AppCompatActivity{
 //        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager));
 
 //        setPagerAdapter();
-        setFragment();;
+        setFragment();
         AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 16);
+        calendar.set(Calendar.MINUTE, 12);
+
+        Intent alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(
+                        MainActivity.this,
+                        102,
+                        alarmIntent,
+                        PendingIntent.FLAG_NO_CREATE
+                );
+
+        System.out.println(pendingIntent);
+        // 알람 매니저
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.getTimeInMillis(),
+                pendingIntent
+        );
+
+        pendingIntent =
+                PendingIntent.getBroadcast(
+                        MainActivity.this,
+                        102,
+                        alarmIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        System.out.println(pendingIntent);
     }
 
     // 어댑터 설정
@@ -56,6 +95,9 @@ public class MainActivity extends AppCompatActivity{
         fragment = new ListFragment();
 //        adapter.addItem(fragment);
 
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+
+        
         // 완료 목록 있을 때
 //        for(int i = 0; i < 2; i++) {
 //            fragment = new ListFragment();
@@ -65,11 +107,27 @@ public class MainActivity extends AppCompatActivity{
 //            adapter.addItem(fragment);
 //        }
 //        container.setAdapter(adapter);
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
     }
 
-//    static class ListPagerAdapter extends FragmentStatePagerAdapter {
+
+
+    @Override
+    public void onBackPressed() {
+        Toast toast = Toast.makeText(this, R.string.finish_toast, Toast.LENGTH_SHORT);
+
+        if(System.currentTimeMillis() > backPressedTime + 2000){
+            backPressedTime = System.currentTimeMillis();
+            toast.show();
+            return;
+        }
+
+        if(System.currentTimeMillis() <= backPressedTime + 2000){
+            super.onBackPressed();
+            toast.cancel();
+        }
+    }
+
+    //    static class ListPagerAdapter extends FragmentStatePagerAdapter {
 //        List<Fragment> items = new ArrayList<>();
 //
 //        public ListPagerAdapter(FragmentManager fm) {
@@ -90,20 +148,4 @@ public class MainActivity extends AppCompatActivity{
 //            return items.size();
 //        }
 //    }
-
-    @Override
-    public void onBackPressed() {
-        Toast toast = Toast.makeText(this, R.string.finish_toast, Toast.LENGTH_SHORT);
-
-        if(System.currentTimeMillis() > backPressedTime + 2000){
-            backPressedTime = System.currentTimeMillis();
-            toast.show();
-            return;
-        }
-
-        if(System.currentTimeMillis() <= backPressedTime + 2000){
-            super.onBackPressed();
-            toast.cancel();
-        }
-    }
 }
