@@ -42,8 +42,8 @@ public class DatabaseHelper {
         }
     }
 
-    // 데이터 조회
-    public static Bundle selectData(String tableName){
+    // 테이블 전체 조회
+    public static Bundle selectAllData(String tableName){
         Bundle data = new Bundle();
         Cursor cursor;
 
@@ -74,6 +74,29 @@ public class DatabaseHelper {
             }
 
             cursor.close();
+        }
+        return data;
+    }
+
+    // 행 조회
+    public static Bundle selectData(String tableName, int id){
+        Bundle data = new Bundle();
+        Cursor cursor;
+
+        String sql = "select title, content, dateValue from " +
+                tableName +
+                " where _id = " + id;
+        if(database != null) {
+            cursor = database.rawQuery(sql, null);
+            cursor.moveToFirst();
+
+            String title = cursor.getString(0);
+            String content = cursor.getString(1);
+            String date = cursor.getString(2);
+
+            data.putString(TITLE_KEY, title);
+            data.putString(CONTENT_KEY, content);
+            data.putString(DATE_KEY, date);
         }
         return data;
     }

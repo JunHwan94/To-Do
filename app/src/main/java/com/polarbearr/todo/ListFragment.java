@@ -56,7 +56,7 @@ public class ListFragment extends Fragment {
         setButtonPosition(metrics, fab);
 
         // 할 일 데이터베이스에서 불러오기
-        loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
+        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
 
         // 완료한 일 있을 때 프래그먼트 구분해서 데이터 설정
 //        Bundle bundle = getArguments();
@@ -125,7 +125,7 @@ public class ListFragment extends Fragment {
                     intent.putExtra(CONTENT_KEY, content);
                     intent.putExtra(ID_KEY, id);
                     intent.putExtra(DATE_KEY, date);
-                    intent.putExtra(ITEM_COUNT_KEY, count); // 저장 후 writeactivity 종료안할거면 전달
+//                    intent.putExtra(ITEM_COUNT_KEY, count); // 저장 후 writeactivity 종료안할거면 전달
 
                     startActivityForResult(intent, WRITE_REQUEST_CODE);
                 }
@@ -167,9 +167,9 @@ public class ListFragment extends Fragment {
         if(data != null) {
             boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
             if(databaseChangeFlag == true) {
-                loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
+                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
                 setTodoAdapter();
-                Toast.makeText(getContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
             }
         }
     }

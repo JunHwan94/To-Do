@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         DatabaseHelper.openDatabase(getApplicationContext(), TODO_DB);
-//        DatabaseHelper.dropTable();
         DatabaseHelper.createTable(TODO_TABLE);
 //        DatabaseHelper.createTable(COMPLETED_TABLE);
 
@@ -48,42 +47,9 @@ public class MainActivity extends AppCompatActivity{
 //        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager));
 
 //        setPagerAdapter();
-        setFragment();
-        AdView adView = findViewById(R.id.adView);
+        setFragment();AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
-
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 16);
-        calendar.set(Calendar.MINUTE, 12);
-
-        Intent alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
-        PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(
-                        MainActivity.this,
-                        102,
-                        alarmIntent,
-                        PendingIntent.FLAG_NO_CREATE
-                );
-
-        System.out.println(pendingIntent);
-        // 알람 매니저
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                pendingIntent
-        );
-
-        pendingIntent =
-                PendingIntent.getBroadcast(
-                        MainActivity.this,
-                        102,
-                        alarmIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        System.out.println(pendingIntent);
     }
 
     // 어댑터 설정
