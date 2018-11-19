@@ -75,9 +75,9 @@ public class WriteActivity extends AppCompatActivity {
         nCheckBox = findViewById(R.id.nCheckBox);
 
         // 새 할일 작성 할 경우
-//        if(id == 0) id = intent.getIntExtra(ITEM_COUNT_KEY, 0);
+        if(id == 0) id = intent.getIntExtra(ITEM_COUNT_KEY, 0);
 
-        Toast.makeText(this, "id = " + id, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "id = " + id, Toast.LENGTH_SHORT).show();
         // 목록의 아이템을 눌러서 WriteActivity 실행했을 때 뷰 처리
         if(id != 0){
             tvTitle.setText(title);
@@ -344,7 +344,7 @@ public class WriteActivity extends AppCompatActivity {
         }).start();
 
 
-        System.out.println(year + "년 " + month + "월 " +  day + "일 " + hour + "시 " + minute + "분으로 알람 설정됨");
+//        System.out.println(year + "년 " + month + "월 " +  day + "일 " + hour + "시 " + minute + "분으로 알람 설정됨");
     }
 
     @Override
