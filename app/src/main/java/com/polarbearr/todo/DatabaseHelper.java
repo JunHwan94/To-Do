@@ -82,30 +82,30 @@ public class DatabaseHelper {
         return data;
     }
 
-    // 행 조회
-    public static Bundle selectData(String tableName, int id){
-        Bundle data = new Bundle();
-        Cursor cursor;
-
-        String sql = "select title, content, dateValue, alarmTime from " +
-                tableName +
-                " where _id = " + id;
-        if(database != null) {
-            cursor = database.rawQuery(sql, null);
-            cursor.moveToFirst();
-
-            String title = cursor.getString(0);
-            String content = cursor.getString(1);
-            String date = cursor.getString(2);
-            String alarmTime = cursor.getString(3);
-
-            data.putString(TITLE_KEY, title);
-            data.putString(CONTENT_KEY, content);
-            data.putString(DATE_KEY, date);
-            data.putString(ALARM_TIME_KEY, alarmTime);
-        }
-        return data;
-    }
+//    // 행 조회
+//    public static Bundle selectData(String tableName, int id){
+//        Bundle data = new Bundle();
+//        Cursor cursor;
+//
+//        String sql = "select title, content, dateValue, alarmTime from " +
+//                tableName +
+//                " where _id = " + id;
+//        if(database != null) {
+//            cursor = database.rawQuery(sql, null);
+//            cursor.moveToFirst();
+//
+//            String title = cursor.getString(0);
+//            String content = cursor.getString(1);
+//            String date = cursor.getString(2);
+//            String alarmTime = cursor.getString(3);
+//
+//            data.putString(TITLE_KEY, title);
+//            data.putString(CONTENT_KEY, content);
+//            data.putString(DATE_KEY, date);
+//            data.putString(ALARM_TIME_KEY, alarmTime);
+//        }
+//        return data;
+//    }
 
     // 행 삽입
     public static void insertData(String tableName, Bundle bundle){

@@ -286,13 +286,12 @@ public class WriteActivity extends AppCompatActivity {
                     AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     // 현재 아이템의 id로 알람이 설정되어있으면 취소
                     if (pendingIntent != null) {
-                        pendingIntent =
-                                PendingIntent.getBroadcast(
-                                        WriteActivity.this,
-                                        id,
-                                        alarmIntent,
-                                        PendingIntent.FLAG_UPDATE_CURRENT
-                                );
+                        pendingIntent = PendingIntent.getBroadcast(
+                                    WriteActivity.this,
+                                            id,
+                                            alarmIntent,
+                                            PendingIntent.FLAG_UPDATE_CURRENT
+                                        );
                         if (pendingIntent != null) {
                             alarmManager.cancel(pendingIntent);
                             pendingIntent.cancel();
@@ -368,7 +367,9 @@ public class WriteActivity extends AppCompatActivity {
         calendar.set(Calendar.MINUTE, minute);
 
         Intent alarmIntent = new Intent(WriteActivity.this, AlarmReceiver.class);
-        alarmIntent.putExtra(ID_KEY, id);
+        alarmIntent.putExtra(TITLE_KEY, title);
+        alarmIntent.putExtra(CONTENT_KEY, content);
+
         final PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
                         WriteActivity.this,

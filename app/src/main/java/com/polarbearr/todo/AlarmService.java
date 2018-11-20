@@ -26,7 +26,7 @@ import static com.polarbearr.todo.ListFragment.TITLE_KEY;
 public class AlarmService extends Service {
     private static final String APP_NAME = "To Do";
     private static final String CHANNEL_ID = "cid";
-    private static final String CHANNEL_DESCRIPTION = "channel description";
+    private static final String CHANNEL_DESCRIPTION = "할일 알림";
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -49,17 +49,14 @@ public class AlarmService extends Service {
     }
 
     public void processIntent(Intent intent){
-            int id = intent.getIntExtra(ID_KEY, 0);
-
-            Bundle getData = DatabaseHelper.selectData(TODO_TABLE, id);
-            processBundle(getData);
+        String title = intent.getStringExtra(TITLE_KEY);
+        String content = intent.getStringExtra(CONTENT_KEY);
+//            Bundle getData = DatabaseHelper.selectData(TODO_TABLE, id);
+        setNotification(title, content);
     }
 
-    // 번들에서 데이터 꺼내서 알람 설정
-    public void processBundle(Bundle getData){
-        String title = getData.getString(TITLE_KEY);
-        String content = getData.getString(CONTENT_KEY);
-
+    // 가져온 제목 내용으로 알람 설정
+    public void setNotification(String title, String content){
         Intent intent1 = new Intent(AlarmService.this, MainActivity.class);
         intent1.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP| Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(AlarmService.this, 0, intent1, PendingIntent.FLAG_CANCEL_CURRENT);
