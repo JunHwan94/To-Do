@@ -16,7 +16,10 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import java.util.zip.DataFormatException;
+
 import static com.polarbearr.todo.DatabaseHelper.TODO_ITEM;
+import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
 import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
@@ -25,13 +28,16 @@ public class ListFragment extends Fragment {
     static final String CONTENT_KEY = "contentkey";
     static final String ID_KEY = "idkey";
     static final String DATE_KEY = "datekey";
-    static final String ITEM_COUNT_KEY = "itemcountkey";
+    static final String GREATEST_ID_KEY = "greatestidkey";
+    static final String ALARM_TIME_KEY = "alarmtimekey";
     static final String NOTHING = "없음";
     static final int WRITE_REQUEST_CODE = 101;
 
     private Bundle loadedData;
     private RecyclerView recyclerView;
     private FloatingActionButton fab;
+
+    private int count;
 
     @Nullable
     @Override
@@ -43,18 +49,6 @@ public class ListFragment extends Fragment {
         recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(layoutManager);
 
-        // 플로팅버튼 설정
-        fab = rootView.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), WriteActivity.class);
-                startActivityForResult(intent, WRITE_REQUEST_CODE);
-            }
-        });
-        DisplayMetrics metrics = getMetrics(getContext());
-        setButtonPosition(metrics, fab);
-
         // 할 일 데이터베이스에서 불러오기
         loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
 
@@ -64,6 +58,25 @@ public class ListFragment extends Fragment {
 
         // 리사이클러뷰에 어댑터 설정
         setTodoAdapter();
+
+        // 플로팅버튼 설정
+        fab = rootView.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), WriteActivity.class);
+
+                // DB테이블에 행 하나라도 있으면 id를 조회해서 해당 id보다 1큰 수를
+                // 작성할 id로 넘겨줌
+                if(count != 0) {
+                    int greatestId = DatabaseHelper.selectGreatestId(TODO_TABLE);
+                    intent.putExtra(GREATEST_ID_KEY, greatestId);
+                }
+                startActivityForResult(intent, WRITE_REQUEST_CODE);
+            }
+        });
+        DisplayMetrics metrics = getMetrics(getContext());
+        setButtonPosition(metrics, fab);
 
         return rootView;
     }
@@ -102,13 +115,15 @@ public class ListFragment extends Fragment {
                 String title = itemBundle.getString(TITLE_KEY);
                 String content = itemBundle.getString(CONTENT_KEY);
                 String date = itemBundle.getString(DATE_KEY);
+                String alarmTime = itemBundle.getString(ALARM_TIME_KEY);
                 // 날짜 선택안한 데이터 불러오면 없음으로 표시
                 if(date.equals(DATE_NOT_SELECTED)) date = NOTHING;
                 int id = itemBundle.getInt(ID_KEY);
 
-                item = new TodoItem(title, content, date, id);
+                item = new TodoItem(title, content, date, alarmTime, id);
                 adapter.addItem(item);
             }
+            count = adapter.getItemCount();
 
             adapter.setOnItemClickListener(new TodoAdapter.OnItemClickListener() {
                 @Override
@@ -117,15 +132,15 @@ public class ListFragment extends Fragment {
                     String title = item.getTitle();
                     String content = item.getContent();
                     String date = item.getDate();
+                    String alarmTime = item.getAlarmTime();
                     int id = item.getId();
-                    int count = adapter.getItemCount();
 
                     Intent intent = new Intent(getContext().getApplicationContext(), WriteActivity.class);
                     intent.putExtra(TITLE_KEY, title);
                     intent.putExtra(CONTENT_KEY, content);
                     intent.putExtra(ID_KEY, id);
                     intent.putExtra(DATE_KEY, date);
-//                    intent.putExtra(ITEM_COUNT_KEY, count); // 저장 후 writeactivity 종료안할거면 전달
+                    intent.putExtra(ALARM_TIME_KEY, alarmTime);
 
                     startActivityForResult(intent, WRITE_REQUEST_CODE);
                 }

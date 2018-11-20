@@ -23,10 +23,11 @@ import java.util.GregorianCalendar;
 
 import static com.polarbearr.todo.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
+import static com.polarbearr.todo.ListFragment.ALARM_TIME_KEY;
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
 import static com.polarbearr.todo.ListFragment.DATE_KEY;
+import static com.polarbearr.todo.ListFragment.GREATEST_ID_KEY;
 import static com.polarbearr.todo.ListFragment.ID_KEY;
-import static com.polarbearr.todo.ListFragment.ITEM_COUNT_KEY;
 import static com.polarbearr.todo.ListFragment.NOTHING;
 import static com.polarbearr.todo.ListFragment.TITLE_KEY;
 
@@ -41,12 +42,15 @@ public class WriteActivity extends AppCompatActivity {
     private String title;
     private String content;
     private String date;
+    private String alarmTime;
     private int id;
+    private boolean isNew = true;
 
     private boolean databaseChangeFlag = false;
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
     private static final String SELECT_DATE = "-- 날짜 선택 --";
+    private static final String SELECT_TIME = "-- 시간 선택 --";
     static final String DATE_NOT_SELECTED = "9999 - 12 - 31";
     static final String INSERT_TYPE = "insert";
     static final String UPDATE_TYPE = "update";
@@ -63,6 +67,7 @@ public class WriteActivity extends AppCompatActivity {
         title = intent.getStringExtra(TITLE_KEY);
         content = intent.getStringExtra(CONTENT_KEY);
         date = intent.getStringExtra(DATE_KEY);
+        alarmTime = intent.getStringExtra(ALARM_TIME_KEY);
         id = intent.getIntExtra(ID_KEY, 0);
 
         tvTitle = findViewById(R.id.title);
@@ -74,24 +79,38 @@ public class WriteActivity extends AppCompatActivity {
         timeSelectButton = findViewById(R.id.timeSelectButton);
         nCheckBox = findViewById(R.id.nCheckBox);
 
-        // 새 할일 작성 할 경우
-        if(id == 0) id = intent.getIntExtra(ITEM_COUNT_KEY, 0);
-
-//        Toast.makeText(this, "id = " + id, Toast.LENGTH_SHORT).show();
         // 목록의 아이템을 눌러서 WriteActivity 실행했을 때 뷰 처리
         if(id != 0){
+            isNew = false;
             tvTitle.setText(title);
             tvContent.setText(content);
+
+            // 기한 있는 할일이면
             if(!date.equals(NOTHING)) {
                 dateSelectButton.setText(date);
-            } else {    // 기한 없을 때 체크박스 미리 체크상태로, 날짜선택 버튼 사용불가상태로
+                timeSelectButton.setText(alarmTime);
+                // 알람 설정돼있으면 알림설정 체크박스 미리 체크
+                if(!alarmTime.equals(SELECT_TIME)) {
+                    System.out.println(alarmTime);
+                    nCheckBox.setChecked(true);
+                    timeSelectButton.setEnabled(true);
+                    timeSelectButton.setVisibility(View.VISIBLE);
+                }
+            } else {    // 기한 없을 때 기한없음 체크박스 미리 체크상태로, 날짜선택 버튼 사용불가상태로
                 dCheckBox.setChecked(true);
                 dateSelectButton.setEnabled(false);
                 dateSelectButton.setTextColor(Color.LTGRAY);
+                nCheckBox.setEnabled(false);
+                nCheckBox.setTextColor(Color.LTGRAY);
             }
         }
         // + 버튼을 눌러서 WriteActivity 실행했을 때
-        else deleteButton.setVisibility(View.INVISIBLE);
+        else {
+            id = intent.getIntExtra(GREATEST_ID_KEY, 0) + 1;
+            deleteButton.setVisibility(View.INVISIBLE);
+        }
+
+//        Toast.makeText(this, "id = " + id, Toast.LENGTH_SHORT).show();
 
         // 저장 버튼 이벤트
         setSaveButtonListener(saveButton);
@@ -112,6 +131,7 @@ public class WriteActivity extends AppCompatActivity {
         setCheckBoxListener(nCheckBox, NOTICE_TYPE);
     }
 
+    // 시간 선택 버튼 이벤트 처리
     private void setTimeSelectButtonListener(){
         timeSelectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,10 +143,16 @@ public class WriteActivity extends AppCompatActivity {
                     new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            // 오전
                             String noticeTime = "오전 " + hourOfDay + " : " + minute;
-                            if(12 < hourOfDay){
-                                int hour = hourOfDay - 12;
+                            int hour = hourOfDay;
+                            if(minute < 10) noticeTime = "오전 " + hour + " : 0" + minute;
+
+                            // 오후
+                            if(12 <= hourOfDay){
+                                if(hourOfDay != 12) hour = hourOfDay - 12;
                                 noticeTime = "오후 " + hour + " : " + minute;
+                                if(minute < 10) noticeTime = "오후 " + hour + " : 0" + minute;
                             }
                             timeSelectButton.setText(noticeTime);
                         }
@@ -145,9 +171,17 @@ public class WriteActivity extends AppCompatActivity {
                         if(checkBox.isChecked()) {
                             dateSelectButton.setEnabled(false);
                             dateSelectButton.setTextColor(Color.LTGRAY);
+
+                            nCheckBox.setEnabled(false);
+                            nCheckBox.setTextColor(Color.LTGRAY);
+                            nCheckBox.setChecked(false);
+                            timeSelectButton.setEnabled(false);
+                            timeSelectButton.setVisibility(View.INVISIBLE);
                         } else {
                             dateSelectButton.setEnabled(true);
                             dateSelectButton.setTextColor(Color.BLACK);
+                            nCheckBox.setEnabled(true);
+                            nCheckBox.setTextColor(Color.BLACK);
                         }
                         break;
                     case NOTICE_TYPE:
@@ -161,7 +195,6 @@ public class WriteActivity extends AppCompatActivity {
                         }
                         break;
                 }
-
             }
         });
     }
@@ -234,8 +267,38 @@ public class WriteActivity extends AppCompatActivity {
                 title = tvTitle.getText().toString();
                 content = tvContent.getText().toString();
                 date = dateSelectButton.getText().toString();
+                alarmTime = timeSelectButton.getText().toString();
                 // 기한 없음 체크했을 때
                 if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
+
+                // 알림 설정했다가 안하면 알람 취소하기
+                if(!nCheckBox.isChecked()) {
+                    alarmTime = SELECT_TIME;
+                    Intent alarmIntent = new Intent(WriteActivity.this, AlarmReceiver.class);
+
+                    PendingIntent pendingIntent =
+                            PendingIntent.getBroadcast(
+                                    WriteActivity.this,
+                                    id,
+                                    alarmIntent,
+                                    PendingIntent.FLAG_CANCEL_CURRENT
+                            );
+                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                    // 현재 아이템의 id로 알람이 설정되어있으면 취소
+                    if (pendingIntent != null) {
+                        pendingIntent =
+                                PendingIntent.getBroadcast(
+                                        WriteActivity.this,
+                                        id,
+                                        alarmIntent,
+                                        PendingIntent.FLAG_UPDATE_CURRENT
+                                );
+                        if (pendingIntent != null) {
+                            alarmManager.cancel(pendingIntent);
+                            pendingIntent.cancel();
+                        }
+                    }
+                }
 
                 // 제목 없을 때
                 if (title.equals(""))
@@ -244,23 +307,22 @@ public class WriteActivity extends AppCompatActivity {
                 else if(date.equals(SELECT_DATE))
                     Toast.makeText(getBaseContext(), R.string.dateselect_toast, Toast.LENGTH_SHORT).show();
                 // 수정할 때
-                else if (id != 0) {
-                    TodoItem item = new TodoItem(title, content, date, id);
-                    processData(item, UPDATE_TYPE);
-                    if(nCheckBox.isChecked()){
-                        setAlarm();
-                    }
-                    onBackPressed();
+                else if (!isNew) {
+                    writeTodo(UPDATE_TYPE);
                 }
                 // 새로운 할일을 작성할 때
                 else {
-                    TodoItem item = new TodoItem(title, content, date);
-                    processData(item, INSERT_TYPE);
-                    if(nCheckBox.isChecked()){
-                        setAlarm();
-                    }
-                    onBackPressed();
+                    writeTodo(INSERT_TYPE);
                 }
+            }
+
+            public void writeTodo(String type){
+                TodoItem item = new TodoItem(title, content, date, alarmTime, id);
+                processData(item, type);
+                if(nCheckBox.isChecked()){
+                    setAlarm();
+                }
+                onBackPressed();
             }
 
             public void processData(TodoItem item, final String type){
@@ -300,7 +362,7 @@ public class WriteActivity extends AppCompatActivity {
 
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month - 1);
+        calendar.set(Calendar.MONTH, month - 1);    // 1 작은 숫자를 설정해줘야 제대로 작동함. DatePicker가 1 작은 값을 반환하는 것과 같은듯
         calendar.set(Calendar.DATE, day);
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
@@ -316,20 +378,6 @@ public class WriteActivity extends AppCompatActivity {
                 );
 
         final AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//        // 현재 아이템의 id로 알람이 설정되어있으면 취소
-//        if(pendingIntent != null){
-//            pendingIntent =
-//                    PendingIntent.getBroadcast(
-//                            WriteActivity.this,
-//                            id,
-//                            alarmIntent,
-//                            PendingIntent.FLAG_UPDATE_CURRENT
-//                    );
-//            if(pendingIntent != null) {
-//                alarmManager.cancel(pendingIntent);
-//                pendingIntent.cancel();
-//            }
-//        }
 
         // 선택한 날짜, 시간으로 알람 설정
         new Thread(new Runnable() {
@@ -342,7 +390,6 @@ public class WriteActivity extends AppCompatActivity {
                 );
             }
         }).start();
-
 
 //        System.out.println(year + "년 " + month + "월 " +  day + "일 " + hour + "시 " + minute + "분으로 알람 설정됨");
     }

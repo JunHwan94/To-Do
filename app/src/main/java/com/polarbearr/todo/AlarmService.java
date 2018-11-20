@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,13 +40,25 @@ public class AlarmService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        int id = intent.getIntExtra(ID_KEY, 0);
+        // 인텐트 처리
+        processIntent(intent);
 
-        System.out.println("id = " + id);
-        Bundle getData = DatabaseHelper.selectData(TODO_TABLE, id);
+        // 화면 깨우기
+        wakeScreen();
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    public void processIntent(Intent intent){
+            int id = intent.getIntExtra(ID_KEY, 0);
+
+            Bundle getData = DatabaseHelper.selectData(TODO_TABLE, id);
+            processBundle(getData);
+    }
+
+    // 번들에서 데이터 꺼내서 알람 설정
+    public void processBundle(Bundle getData){
         String title = getData.getString(TITLE_KEY);
         String content = getData.getString(CONTENT_KEY);
-        String date = getData.getString(DATE_KEY);
 
         Intent intent1 = new Intent(AlarmService.this, MainActivity.class);
         intent1.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP| Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -68,9 +81,9 @@ public class AlarmService extends Service {
             notificationManager.createNotificationChannel(notificationChannel);
         }
 
-        builder.setSmallIcon(R.drawable.todo_icon).setTicker(APP_NAME)
+        builder.setSmallIcon(R.mipmap.ic_todo_round).setTicker(APP_NAME)
                 .setWhen(System.currentTimeMillis()).setNumber(0)
-                .setContentTitle(title).setContentText(content + "  " + date)
+                .setContentTitle(title).setContentText(content)
                 .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE)
                 .setPriority(Notification.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent).setAutoCancel(true)
@@ -79,7 +92,14 @@ public class AlarmService extends Service {
         notificationManager.notify(0, builder.build());
 
 //        Toast.makeText(this, title + "\n" + content + "\n" + date, Toast.LENGTH_LONG).show();
-        return super.onStartCommand(intent, flags, startId);
+    }
+
+    // 화면 깨우기
+    public void wakeScreen(){
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE );
+        PowerManager.WakeLock wakeLock = pm.newWakeLock( PowerManager.SCREEN_DIM_WAKE_LOCK
+                | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG:");
+        wakeLock.acquire(3000);
     }
 
     @Override

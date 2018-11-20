@@ -23,7 +23,6 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
     private static final String TITLE = "title";
     private static final String CONTENT = "content";
 
-
     public static interface OnItemClickListener{
         public void onItemClick(ViewHolder holder, View view, int position);
     }

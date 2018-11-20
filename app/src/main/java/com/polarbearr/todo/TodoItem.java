@@ -4,22 +4,23 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class TodoItem implements Parcelable {
-    String title;
-    String content;
-    int id;
-    String date;
+    private String title;
+    private String content;
+    private int id;
+    private String date;
+    private String alarmTime;
 
-    public TodoItem(String title, String content, String date) {
+//    public TodoItem(String title, String content, String date) {
+//        this.title = title;
+//        this.content = content;
+//        this.date = date;
+//    }
+
+    public TodoItem(String title, String content, String date, String alarmTime, int id) {
         this.title = title;
         this.content = content;
         this.date = date;
-    }
-
-    // DB에서 조회할 때는 id 값 넣어주기
-    public TodoItem(String title, String content, String date, int id) {
-        this.title = title;
-        this.content = content;
-        this.date = date;
+        this.alarmTime = alarmTime;
         this.id = id;
     }
 
@@ -27,6 +28,7 @@ public class TodoItem implements Parcelable {
         title = in.readString();
         content = in.readString();
         date = in.readString();
+        alarmTime = in.readString();
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
@@ -65,6 +67,14 @@ public class TodoItem implements Parcelable {
         this.date = date;
     }
 
+    public String getAlarmTime() {
+        return alarmTime;
+    }
+
+    public void setAlarmTime(String alarmTime) {
+        this.alarmTime = alarmTime;
+    }
+
     public int getId() {
         return id;
     }
@@ -83,5 +93,6 @@ public class TodoItem implements Parcelable {
         dest.writeString(title);
         dest.writeString(content);
         dest.writeString(date);
+        dest.writeString(alarmTime);
     }
 }

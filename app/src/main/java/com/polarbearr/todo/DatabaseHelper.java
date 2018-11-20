@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
+import static com.polarbearr.todo.ListFragment.ALARM_TIME_KEY;
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
 import static com.polarbearr.todo.ListFragment.DATE_KEY;
 import static com.polarbearr.todo.ListFragment.ID_KEY;
@@ -32,10 +33,11 @@ public class DatabaseHelper {
     public static void createTable(String tableName){
         String sql = "create table if not exists " + tableName +
                 "(" +
-                "   _id integer PRIMARY KEY AUTOINCREMENT," +
+                "   _id integer PRIMARY KEY," +
                 "   title text, " +
                 "   content text, " +
-                "   dateValue text" +
+                "   dateValue text, " +
+                "   alarmTime text" +
                 ")";
         if(database != null) {
             database.execSQL(sql);
@@ -47,7 +49,7 @@ public class DatabaseHelper {
         Bundle data = new Bundle();
         Cursor cursor;
 
-        String sql = "select title, content, _id, dateValue from " +
+        String sql = "select title, content, _id, dateValue, alarmTime from " +
                 tableName +
                 " order by dateValue desc";
 
@@ -62,11 +64,13 @@ public class DatabaseHelper {
                 String content = cursor.getString(1);
                 int id = cursor.getInt(2);
                 String date = cursor.getString(3);
+                String alarmTime = cursor.getString(4);
 
                 bundle.putString(TITLE_KEY, title);
                 bundle.putString(CONTENT_KEY, content);
                 bundle.putInt(ID_KEY, id);
                 bundle.putString(DATE_KEY, date);
+                bundle.putString(ALARM_TIME_KEY, alarmTime);
 
                 data.putBundle(TODO_ITEM + i, bundle);
 
@@ -83,7 +87,7 @@ public class DatabaseHelper {
         Bundle data = new Bundle();
         Cursor cursor;
 
-        String sql = "select title, content, dateValue from " +
+        String sql = "select title, content, dateValue, alarmTime from " +
                 tableName +
                 " where _id = " + id;
         if(database != null) {
@@ -93,10 +97,12 @@ public class DatabaseHelper {
             String title = cursor.getString(0);
             String content = cursor.getString(1);
             String date = cursor.getString(2);
+            String alarmTime = cursor.getString(3);
 
             data.putString(TITLE_KEY, title);
             data.putString(CONTENT_KEY, content);
             data.putString(DATE_KEY, date);
+            data.putString(ALARM_TIME_KEY, alarmTime);
         }
         return data;
     }
@@ -104,13 +110,15 @@ public class DatabaseHelper {
     // 행 삽입
     public static void insertData(String tableName, Bundle bundle){
         TodoItem item = bundle.getParcelable(TODO_ITEM);
-        String title = item.title;
-        String content = item.content;
-        String date = item.date;
+        String title = item.getTitle();
+        String content = item.getContent();
+        String date = item.getDate();
+        String alarmTime = item.getAlarmTime();
+        int id = item.getId();
 
         if(database != null) {
-            String sql = "insert into " + tableName + "(title, content, dateValue) values(?, ?, ?)";
-            Object[] params = {title, content, date};
+            String sql = "insert into " + tableName + "(title, content, dateValue, alarmTime, _id) values(?, ?, ?, ?, ?)";
+            Object[] params = {title, content, date, alarmTime, id};
             database.execSQL(sql, params);
         }
     }
@@ -129,11 +137,26 @@ public class DatabaseHelper {
         String title = item.getTitle();
         String content = item.getContent();
         String date = item.getDate();
+        String alarmTime = item.getAlarmTime();
         int id = item.getId();
 
         if(database != null){
-            String sql = "update " + tableName + " set title = \'" + title + "\', content = \'" + content + "\', dateValue = \'" + date + "\' where _id = " + id;
+            String sql = "update " + tableName + " set title = \'" + title + "\', content = \'" + content + "\', dateValue = \'" + date + "\', alarmTime = \'" + alarmTime + "\' where _id = " + id;
             database.execSQL(sql);
         }
+    }
+
+    public static int selectGreatestId(String tableName){
+        String sql = "select _id from " + tableName + " order by _id desc";
+        Cursor cursor;
+        int id = 0;
+
+        if(database != null){
+            cursor = database.rawQuery(sql, null);
+            cursor.moveToFirst();
+            id = cursor.getInt(0);
+        }
+
+        return id;
     }
 }
