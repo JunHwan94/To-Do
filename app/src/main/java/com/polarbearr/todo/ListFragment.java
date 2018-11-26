@@ -45,7 +45,7 @@ public class ListFragment extends Fragment {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_list, container, false);
 
         // 리사이클러뷰 설정
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(layoutManager);
 

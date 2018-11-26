@@ -47,7 +47,8 @@ public class MainActivity extends AppCompatActivity{
 //        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager));
 
 //        setPagerAdapter();
-        setFragment();AdView adView = findViewById(R.id.adView);
+        setFragment();
+        AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
     }
