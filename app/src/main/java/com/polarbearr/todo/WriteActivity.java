@@ -252,10 +252,39 @@ public class WriteActivity extends AppCompatActivity {
                         DatabaseHelper.deleteData(TODO_TABLE, id);
                     }
                 }).start();
+
+                deleteAlarm();
                 databaseChangeFlag = true;
                 onBackPressed();
             }
         });
+    }
+
+    // 설정된 알람 삭제
+    public void deleteAlarm(){
+        Intent alarmIntent = new Intent(WriteActivity.this, AlarmReceiver.class);
+
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(
+                        WriteActivity.this,
+                        id,
+                        alarmIntent,
+                        PendingIntent.FLAG_CANCEL_CURRENT
+                );
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        //현재 아이템의 id로 알람이 설정되어있으면 취소
+        if (pendingIntent != null) {
+            pendingIntent = PendingIntent.getBroadcast(
+                    WriteActivity.this,
+                    id,
+                    alarmIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT
+            );
+            if (pendingIntent != null) {
+                alarmManager.cancel(pendingIntent);
+                pendingIntent.cancel();
+            }
+        }
     }
 
     // 저장버튼 이벤트 처리
@@ -271,33 +300,8 @@ public class WriteActivity extends AppCompatActivity {
                 // 기한 없음 체크했을 때
                 if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
 
-                // 알림 설정했다가 안하면 알람 취소하기
-                if(!nCheckBox.isChecked()) {
-                    alarmTime = SELECT_TIME;
-                    Intent alarmIntent = new Intent(WriteActivity.this, AlarmReceiver.class);
-
-                    PendingIntent pendingIntent =
-                            PendingIntent.getBroadcast(
-                                    WriteActivity.this,
-                                    id,
-                                    alarmIntent,
-                                    PendingIntent.FLAG_CANCEL_CURRENT
-                            );
-                    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    // 현재 아이템의 id로 알람이 설정되어있으면 취소
-                    if (pendingIntent != null) {
-                        pendingIntent = PendingIntent.getBroadcast(
-                                    WriteActivity.this,
-                                            id,
-                                            alarmIntent,
-                                            PendingIntent.FLAG_UPDATE_CURRENT
-                                        );
-                        if (pendingIntent != null) {
-                            alarmManager.cancel(pendingIntent);
-                            pendingIntent.cancel();
-                        }
-                    }
-                }
+                // 알림 설정 체크 안돼있으면 텍스트 복구
+                if(!nCheckBox.isChecked()) alarmTime = SELECT_TIME;
 
                 // 제목 없을 때
                 if (title.equals(""))
@@ -369,13 +373,14 @@ public class WriteActivity extends AppCompatActivity {
         Intent alarmIntent = new Intent(WriteActivity.this, AlarmReceiver.class);
         alarmIntent.putExtra(TITLE_KEY, title);
         alarmIntent.putExtra(CONTENT_KEY, content);
+        alarmIntent.putExtra(ID_KEY, id);
 
         final PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
                         WriteActivity.this,
                         id,
                         alarmIntent,
-                        PendingIntent.FLAG_CANCEL_CURRENT
+                        PendingIntent.FLAG_UPDATE_CURRENT
                 );
 
         final AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);

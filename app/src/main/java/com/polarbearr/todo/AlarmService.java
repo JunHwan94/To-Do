@@ -51,15 +51,16 @@ public class AlarmService extends Service {
     public void processIntent(Intent intent){
         String title = intent.getStringExtra(TITLE_KEY);
         String content = intent.getStringExtra(CONTENT_KEY);
+        int id = intent.getIntExtra(ID_KEY, 0);
 //            Bundle getData = DatabaseHelper.selectData(TODO_TABLE, id);
-        setNotification(title, content);
+        setNotification(title, content, id);
     }
 
     // 가져온 제목 내용으로 알람 설정
-    public void setNotification(String title, String content){
-        Intent intent1 = new Intent(AlarmService.this, MainActivity.class);
-        intent1.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP| Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(AlarmService.this, 0, intent1, PendingIntent.FLAG_CANCEL_CURRENT);
+    public void setNotification(String title, String content, int id){
+        Intent intent = new Intent(AlarmService.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(AlarmService.this, id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         Notification.Builder builder = new Notification.Builder(getApplicationContext());
@@ -86,14 +87,14 @@ public class AlarmService extends Service {
                 .setContentIntent(pendingIntent).setAutoCancel(true)
                 .setOngoing(true);
 
-        notificationManager.notify(0, builder.build());
+        notificationManager.notify(id, builder.build());
 
 //        Toast.makeText(this, title + "\n" + content + "\n" + date, Toast.LENGTH_LONG).show();
     }
 
     // 화면 깨우기
     public void wakeScreen(){
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE );
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wakeLock = pm.newWakeLock( PowerManager.SCREEN_DIM_WAKE_LOCK
                 | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG:");
         wakeLock.acquire(3000);
