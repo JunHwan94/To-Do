@@ -1,4 +1,4 @@
-package com.polarbearr.todo;
+package com.polarbearr.todo.data;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import com.polarbearr.todo.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +70,7 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
         this.listener = listener;
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView tvTitle;
         TextView tvContent;
         TextView tvDate;

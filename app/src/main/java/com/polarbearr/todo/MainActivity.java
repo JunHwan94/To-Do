@@ -1,15 +1,7 @@
 package com.polarbearr.todo;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.provider.ContactsContract;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 
 import android.widget.FrameLayout;
@@ -17,13 +9,12 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.polarbearr.todo.data.DatabaseHelper;
 
 //import java.util.ArrayList;
 //import java.util.List;
 
-import java.util.Calendar;
-
-import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
+import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 
 public class MainActivity extends AppCompatActivity{
     private static FrameLayout container;

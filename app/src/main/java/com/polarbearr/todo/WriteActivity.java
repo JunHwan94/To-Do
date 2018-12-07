@@ -18,11 +18,14 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.polarbearr.todo.data.DatabaseHelper;
+import com.polarbearr.todo.data.TodoItem;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import static com.polarbearr.todo.DatabaseHelper.TODO_ITEM;
-import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
+import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
+import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.ListFragment.ALARM_TIME_KEY;
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
 import static com.polarbearr.todo.ListFragment.DATE_KEY;
@@ -358,7 +361,7 @@ public class WriteActivity extends AppCompatActivity {
         int month  = Integer.valueOf(dateButtonText.split(" - ")[1]);
         int day = Integer.valueOf(dateButtonText.split(" - ")[2]);
         int hour = Integer.valueOf(timeButtonText.split(" : ")[0].split(" ")[1]);
-        if(ap.equals(PM)){
+        if(ap.equals(PM) && hour != 12){
             hour += 12;
         }
         int minute = Integer.valueOf(timeButtonText.split(" : ")[1]);

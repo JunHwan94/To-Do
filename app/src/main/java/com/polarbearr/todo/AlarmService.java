@@ -9,17 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.text.Layout;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Toast;
-
-import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
-import static com.polarbearr.todo.ListFragment.DATE_KEY;
 import static com.polarbearr.todo.ListFragment.ID_KEY;
 import static com.polarbearr.todo.ListFragment.TITLE_KEY;
 
@@ -52,7 +44,7 @@ public class AlarmService extends Service {
         String title = intent.getStringExtra(TITLE_KEY);
         String content = intent.getStringExtra(CONTENT_KEY);
         int id = intent.getIntExtra(ID_KEY, 0);
-//            Bundle getData = DatabaseHelper.selectData(TODO_TABLE, id);
+
         setNotification(title, content, id);
     }
 
@@ -88,8 +80,6 @@ public class AlarmService extends Service {
                 .setOngoing(true);
 
         notificationManager.notify(id, builder.build());
-
-//        Toast.makeText(this, title + "\n" + content + "\n" + date, Toast.LENGTH_LONG).show();
     }
 
     // 화면 깨우기

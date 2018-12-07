@@ -14,22 +14,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Toast;
 
-import java.util.zip.DataFormatException;
+import com.polarbearr.todo.data.DatabaseHelper;
+import com.polarbearr.todo.data.TodoAdapter;
+import com.polarbearr.todo.data.TodoItem;
 
-import static com.polarbearr.todo.DatabaseHelper.TODO_ITEM;
-import static com.polarbearr.todo.DatabaseHelper.TODO_TABLE;
+import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
+import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
 import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
 public class ListFragment extends Fragment {
-    static final String TITLE_KEY = "titlekey";
-    static final String CONTENT_KEY = "contentkey";
-    static final String ID_KEY = "idkey";
-    static final String DATE_KEY = "datekey";
+    public static final String TITLE_KEY = "titlekey";
+    public static final String CONTENT_KEY = "contentkey";
+    public static final String ID_KEY = "idkey";
+    public static final String DATE_KEY = "datekey";
     static final String GREATEST_ID_KEY = "greatestidkey";
-    static final String ALARM_TIME_KEY = "alarmtimekey";
+    public static final String ALARM_TIME_KEY = "alarmtimekey";
     static final String NOTHING = "없음";
     static final int WRITE_REQUEST_CODE = 101;
 

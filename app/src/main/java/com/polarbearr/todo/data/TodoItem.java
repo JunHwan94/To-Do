@@ -1,4 +1,4 @@
-package com.polarbearr.todo;
+package com.polarbearr.todo.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;

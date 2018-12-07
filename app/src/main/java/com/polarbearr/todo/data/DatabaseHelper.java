@@ -1,4 +1,4 @@
-package com.polarbearr.todo;
+package com.polarbearr.todo.data;
 
 import android.content.Context;
 import android.database.Cursor;
