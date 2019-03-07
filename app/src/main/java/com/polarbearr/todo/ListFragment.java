@@ -19,6 +19,9 @@ import com.polarbearr.todo.data.DatabaseHelper;
 import com.polarbearr.todo.data.TodoAdapter;
 import com.polarbearr.todo.data.TodoItem;
 
+import static com.polarbearr.todo.MainActivity.TODO_KEY;
+import static com.polarbearr.todo.WriteActivity.TYPE_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
@@ -39,6 +42,7 @@ public class ListFragment extends Fragment {
     private FloatingActionButton fab;
 
     private int count;
+    private int fragmentType;
 
     @Nullable
     @Override
@@ -50,16 +54,6 @@ public class ListFragment extends Fragment {
         recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(layoutManager);
 
-        // 할 일 데이터베이스에서 불러오기
-        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
-
-        // 완료한 일 있을 때 프래그먼트 구분해서 데이터 설정
-//        Bundle bundle = getArguments();
-//        if(bundle != null) processBundle(bundle);
-
-        // 리사이클러뷰에 어댑터 설정
-        setTodoAdapter();
-
         // 플로팅버튼 설정
         fab = rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -67,8 +61,7 @@ public class ListFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), WriteActivity.class);
 
-                // DB테이블에 행 하나라도 있으면 id를 조회해서 해당 id보다 1큰 수를
-                // 작성할 id로 넘겨줌
+                // DB테이블에 행 하나라도 있으면 id를 조회해서 해당 id를 넘겨줌, 작성할때 +1
                 if(count != 0) {
                     int greatestId = DatabaseHelper.selectGreatestId(TODO_TABLE);
                     intent.putExtra(GREATEST_ID_KEY, greatestId);
@@ -78,32 +71,39 @@ public class ListFragment extends Fragment {
         });
         DisplayMetrics metrics = getMetrics(getContext());
         setButtonPosition(metrics, fab);
+        
+        // 프래그먼트 구분해서 데이터 설정
+        Bundle bundle = getArguments();
+        if(bundle != null) processBundle(bundle);
+
+        // 리사이클러뷰에 어댑터 설정
+        setTodoAdapter();
 
         return rootView;
     }
 
-// 완료한 일 있을 때
-//    public void processBundle(final Bundle bundle){
-//        int fragmentType = bundle.getInt(TODO_KEY);
-//
-//        switch(fragmentType){
-//            case 0:
-//                // 할 일 데이터베이스에서 불러오기
-//                loadedData = DatabaseHelper.selectData(DatabaseHelper.TODO_TABLE);
-//                break;
-//            case 1:
-//                loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
-//                fab.setVisibility(View.INVISIBLE);
-//                // 완료한 일 데이터베이스에서 불러오기
-////                new Thread(new Runnable() {
-////                    @Override
-////                    public void run() {
-////                        loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
-////                    }
-////                }).start();
-//                break;
-//        }
-//    }
+    // 목록 테이블 구분해서 데이터베이스에서 로드
+    public void processBundle(final Bundle bundle){
+        fragmentType = bundle.getInt(TODO_KEY);
+
+        switch(fragmentType){
+            case 0:
+                // 할 일 데이터베이스에서 불러오기
+                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
+                break;
+            case 1:
+                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
+                fab.setVisibility(View.INVISIBLE);
+                // 완료한 일 데이터베이스에서 불러오기
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
+//                    }
+//                }).start();
+                break;
+        }
+    }
 
     public void setTodoAdapter(){
         final TodoAdapter adapter = new TodoAdapter(getContext());
@@ -142,6 +142,7 @@ public class ListFragment extends Fragment {
                     intent.putExtra(ID_KEY, id);
                     intent.putExtra(DATE_KEY, date);
                     intent.putExtra(ALARM_TIME_KEY, alarmTime);
+                    intent.putExtra(TYPE_KEY, fragmentType);
 
                     startActivityForResult(intent, WRITE_REQUEST_CODE);
                 }
@@ -183,10 +184,30 @@ public class ListFragment extends Fragment {
         if(data != null) {
             boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
             if(databaseChangeFlag == true) {
-                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
+                switch(fragmentType){
+                    case 0:
+                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
+                        break;
+                    case 1:
+                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
+                        break;
+                }
                 setTodoAdapter();
-//                Toast.makeText(getContext(), R.string.save_toast, Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        switch(fragmentType){
+            case 0:
+                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
+                break;
+            case 1:
+                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
+                break;
+        }
+        setTodoAdapter();
+        super.onResume();
     }
 }

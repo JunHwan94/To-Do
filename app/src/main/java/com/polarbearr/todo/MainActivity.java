@@ -1,9 +1,13 @@
 package com.polarbearr.todo;
 
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
-
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -11,13 +15,15 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.polarbearr.todo.data.DatabaseHelper;
 
-//import java.util.ArrayList;
-//import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 
+import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 
 public class MainActivity extends AppCompatActivity{
     private static FrameLayout container;
+    private static ViewPager pager;
     private static long backPressedTime = 0;
 
     static final String TODO_KEY = "0";
@@ -30,14 +36,14 @@ public class MainActivity extends AppCompatActivity{
 
         DatabaseHelper.openDatabase(getApplicationContext(), TODO_DB);
         DatabaseHelper.createTable(TODO_TABLE);
-//        DatabaseHelper.createTable(COMPLETED_TABLE);
+        DatabaseHelper.createTable(COMPLETED_TABLE);
 
         container = findViewById(R.id.container);
-//        TabLayout tabLayout = findViewById(R.id.tabs);
-//        pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-//        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager));
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        pager = findViewById(R.id.pager);
+        pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager));
 
-//        setPagerAdapter();
         setFragment();
 
         AdView adView = findViewById(R.id.adView);
@@ -47,28 +53,20 @@ public class MainActivity extends AppCompatActivity{
 
     // 어댑터 설정
     public void setFragment(){
-//        ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
+        ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
         ListFragment fragment;
-//        Bundle bundle;
+        Bundle bundle;
 
-        fragment = new ListFragment();
-//        adapter.addItem(fragment);
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
-
-        
-        // 완료 목록 있을 때
-//        for(int i = 0; i < 2; i++) {
-//            fragment = new ListFragment();
-//            bundle = new Bundle();
-//            bundle.putInt(TODO_KEY, i);
-//            fragment.setArguments(bundle);
-//            adapter.addItem(fragment);
-//        }
-//        container.setAdapter(adapter);
+        // 페이저 어댑터에 미완료, 완료 목록 프래그먼트 추가
+        for(int i = 0; i < 2; i++) {
+            fragment = new ListFragment();
+            bundle = new Bundle();
+            bundle.putInt(TODO_KEY, i);
+            fragment.setArguments(bundle);
+            adapter.addItem(fragment);
+        }
+        pager.setAdapter(adapter);
     }
-
-
 
     @Override
     public void onBackPressed() {
@@ -86,25 +84,25 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    //    static class ListPagerAdapter extends FragmentStatePagerAdapter {
-//        List<Fragment> items = new ArrayList<>();
-//
-//        public ListPagerAdapter(FragmentManager fm) {
-//            super(fm);
-//        }
-//
-//        public void addItem(Fragment item){
-//            items.add(item);
-//        }
-//
-//        @Override
-//        public Fragment getItem(int position) {
-//            return items.get(position);
-//        }
-//
-//        @Override
-//        public int getCount() {
-//            return items.size();
-//        }
-//    }
+    static class ListPagerAdapter extends FragmentStatePagerAdapter {
+        List<Fragment> items = new ArrayList<>();
+
+        public ListPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        public void addItem(Fragment item){
+            items.add(item);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return items.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return items.size();
+        }
+    }
 }

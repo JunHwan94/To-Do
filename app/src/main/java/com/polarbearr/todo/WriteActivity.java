@@ -24,6 +24,7 @@ import com.polarbearr.todo.data.TodoItem;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.ListFragment.ALARM_TIME_KEY;
@@ -48,10 +49,11 @@ public class WriteActivity extends AppCompatActivity {
     private String alarmTime;
     private int id;
     private boolean isNew = true;
-
     private boolean databaseChangeFlag = false;
+    private int fragmentType;
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
+    public static final String TYPE_KEY = "type";
     private static final String SELECT_DATE = "-- 날짜 선택 --";
     private static final String SELECT_TIME = "-- 시간 선택 --";
     static final String DATE_NOT_SELECTED = "9999 - 12 - 31";
@@ -72,11 +74,14 @@ public class WriteActivity extends AppCompatActivity {
         date = intent.getStringExtra(DATE_KEY);
         alarmTime = intent.getStringExtra(ALARM_TIME_KEY);
         id = intent.getIntExtra(ID_KEY, 0);
+        fragmentType = intent.getIntExtra(TYPE_KEY, 0);
 
         tvTitle = findViewById(R.id.title);
         tvContent = findViewById(R.id.content);
         Button deleteButton = findViewById(R.id.deleteButton);
         Button saveButton = findViewById(R.id.saveButton);
+        Button completeButton = findViewById(R.id.completeButton);
+        Button notCompleteButton = findViewById(R.id.notCompleteButton);
         dateSelectButton = findViewById(R.id.dateSelectButton);
         dCheckBox = findViewById(R.id.dCheckBox);
         timeSelectButton = findViewById(R.id.timeSelectButton);
@@ -111,15 +116,33 @@ public class WriteActivity extends AppCompatActivity {
         else {
             id = intent.getIntExtra(GREATEST_ID_KEY, 0) + 1;
             deleteButton.setVisibility(View.INVISIBLE);
+            completeButton.setVisibility(View.INVISIBLE);
         }
 
-//        Toast.makeText(this, "id = " + id, Toast.LENGTH_SHORT).show();
+        switch(fragmentType){
+            case 0: // 할일 이면
+                notCompleteButton.setVisibility(View.INVISIBLE);
+                break;
+            case 1: // 완료한 일이면
+                tvTitle.setEnabled(false);
+                tvContent.setEnabled(false);
+                dateSelectButton.setEnabled(false);
+                dCheckBox.setEnabled(false);
+                nCheckBox.setEnabled(false);
+                completeButton.setVisibility(View.INVISIBLE);
+                saveButton.setVisibility(View.INVISIBLE);
+                break;
+        }
 
         // 저장 버튼 이벤트
         setSaveButtonListener(saveButton);
 
         // 삭제 버튼 이벤트
         setDeleteButtonListener(deleteButton);
+
+        // 완료, 미완료 버튼 이벤트
+        setCompleteOrNotButtonListener(completeButton);
+        setCompleteOrNotButtonListener(notCompleteButton);
 
         // 날짜 선택 버튼 이벤트 처리
         setDateSelectButtonListener();
@@ -246,48 +269,30 @@ public class WriteActivity extends AppCompatActivity {
 
     // 삭제버튼 이벤트 처리
     public void setDeleteButtonListener(Button deleteButton){
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        DatabaseHelper.deleteData(TODO_TABLE, id);
-                    }
-                }).start();
-
-                deleteAlarm();
-                databaseChangeFlag = true;
+        deleteButton.setOnClickListener(v ->{
+                deleteItem();
                 onBackPressed();
             }
-        });
+        );
     }
 
-    // 설정된 알람 삭제
-    public void deleteAlarm(){
-        Intent alarmIntent = new Intent(WriteActivity.this, AlarmReceiver.class);
-
-        PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(
-                        WriteActivity.this,
-                        id,
-                        alarmIntent,
-                        PendingIntent.FLAG_CANCEL_CURRENT
-                );
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        //현재 아이템의 id로 알람이 설정되어있으면 취소
-        if (pendingIntent != null) {
-            pendingIntent = PendingIntent.getBroadcast(
-                    WriteActivity.this,
-                    id,
-                    alarmIntent,
-                    PendingIntent.FLAG_CANCEL_CURRENT
-            );
-            if (pendingIntent != null) {
-                alarmManager.cancel(pendingIntent);
-                pendingIntent.cancel();
-            }
+    // 데이터 삭제
+    public void deleteItem(){
+        switch(fragmentType){
+            case 0:
+                new Thread(() -> {
+                        DatabaseHelper.deleteData(TODO_TABLE, id);
+                }).start();
+                break;
+            case 1:
+                new Thread(() -> {
+                        DatabaseHelper.deleteData(COMPLETED_TABLE, id);
+                }).start();
+                break;
         }
+
+        deleteAlarm();
+        databaseChangeFlag = true;
     }
 
     // 저장버튼 이벤트 처리
@@ -313,13 +318,9 @@ public class WriteActivity extends AppCompatActivity {
                 else if(date.equals(SELECT_DATE))
                     Toast.makeText(getBaseContext(), R.string.dateselect_toast, Toast.LENGTH_SHORT).show();
                 // 수정할 때
-                else if (!isNew) {
-                    writeTodo(UPDATE_TYPE);
-                }
+                else if (!isNew) writeTodo(UPDATE_TYPE);
                 // 새로운 할일을 작성할 때
-                else {
-                    writeTodo(INSERT_TYPE);
-                }
+                else writeTodo(INSERT_TYPE);
             }
 
             public void writeTodo(String type){
@@ -328,14 +329,13 @@ public class WriteActivity extends AppCompatActivity {
                 if(nCheckBox.isChecked()){
                     setAlarm();
                 }
+
                 onBackPressed();
             }
 
             public void processData(TodoItem item, final String type){
                 giveData.putParcelable(TODO_ITEM, item);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
+                new Thread(() -> {
                         switch (type){
                             case INSERT_TYPE:
                                 DatabaseHelper.insertData(TODO_TABLE, giveData);
@@ -345,9 +345,53 @@ public class WriteActivity extends AppCompatActivity {
                                 break;
                         }
                     }
-                }).start();
+                ).start();
                 databaseChangeFlag = true;
             }
+        });
+    }
+
+    // 완료, 미완료버튼 이벤트 처리
+    public void setCompleteOrNotButtonListener(Button button){
+        button.setOnClickListener(v -> {
+            String tableName1 = "";
+            switch(fragmentType){
+                case 0:
+                    tableName1 = COMPLETED_TABLE;
+                    break;
+                case 1:
+                    tableName1 = TODO_TABLE;
+                    break;
+            }
+            final String tableName = tableName1;
+
+            // 기존 목록에서 삭제
+            deleteAlarm();
+            deleteItem();
+            new Thread(() -> {
+                DatabaseHelper.deleteData(tableName, id);
+            }).start();
+
+            // 반대 목록에 추가
+            try {
+                id = DatabaseHelper.selectGreatestId(tableName) + 1;
+            }catch(Exception e){
+                id = 1;
+            }
+
+            Bundle giveData = new Bundle();
+            title = tvTitle.getText().toString();
+            content = tvContent.getText().toString();
+            date = dateSelectButton.getText().toString();
+            // 기한 없음 체크했을 때
+            if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
+
+            TodoItem item = new TodoItem(title, content, date, SELECT_TIME, id);
+            giveData.putParcelable(TODO_ITEM, item);
+            DatabaseHelper.insertData(tableName, giveData);
+
+            databaseChangeFlag = true;
+            onBackPressed();
         });
     }
 
@@ -403,11 +447,39 @@ public class WriteActivity extends AppCompatActivity {
 //        System.out.println(year + "년 " + month + "월 " +  day + "일 " + hour + "시 " + minute + "분으로 알람 설정됨");
     }
 
+    // 설정된 알람 삭제
+    public void deleteAlarm(){
+        Intent alarmIntent = new Intent(WriteActivity.this, AlarmReceiver.class);
+
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(
+                        WriteActivity.this,
+                        id,
+                        alarmIntent,
+                        PendingIntent.FLAG_CANCEL_CURRENT
+                );
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        //현재 아이템의 id로 알람이 설정되어있으면 취소
+        if (pendingIntent != null) {
+            pendingIntent = PendingIntent.getBroadcast(
+                    WriteActivity.this,
+                    id,
+                    alarmIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT
+            );
+            if (pendingIntent != null) {
+                alarmManager.cancel(pendingIntent);
+                pendingIntent.cancel();
+            }
+        }
+    }
+
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(DATABASE_FLAG_KEY, databaseChangeFlag);
+//        intent.putExtra(TYPE_KEY, listType);
         setResult(RESULT_OK, intent);
         finish();
     }

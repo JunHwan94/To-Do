@@ -71,7 +71,7 @@ public class AlarmService extends Service {
             notificationManager.createNotificationChannel(notificationChannel);
         }
 
-        builder.setSmallIcon(R.mipmap.ic_todo_round).setTicker(APP_NAME)
+        builder.setSmallIcon(R.drawable.ic_stat_name).setTicker(APP_NAME)
                 .setWhen(System.currentTimeMillis()).setNumber(0)
                 .setContentTitle(title).setContentText(content)
                 .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE)
@@ -88,10 +88,5 @@ public class AlarmService extends Service {
         PowerManager.WakeLock wakeLock = pm.newWakeLock( PowerManager.SCREEN_DIM_WAKE_LOCK
                 | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG:");
         wakeLock.acquire(3000);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 }

@@ -10,10 +10,11 @@ public class TodoItem implements Parcelable {
     private String date;
     private String alarmTime;
 
-//    public TodoItem(String title, String content, String date) {
+//    public TodoItem(String title, String content, String date, String alarmTime) {
 //        this.title = title;
 //        this.content = content;
 //        this.date = date;
+//        this.alarmTime = alarmTime;
 //    }
 
     public TodoItem(String title, String content, String date, String alarmTime, int id) {
