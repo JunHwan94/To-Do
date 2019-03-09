@@ -11,6 +11,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.view.WindowManager;
+
 import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
 import static com.polarbearr.todo.ListFragment.ID_KEY;
 import static com.polarbearr.todo.ListFragment.TITLE_KEY;
@@ -85,7 +87,7 @@ public class AlarmService extends Service {
     // 화면 깨우기
     public void wakeScreen(){
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = pm.newWakeLock( PowerManager.SCREEN_DIM_WAKE_LOCK
+        PowerManager.WakeLock wakeLock = pm.newWakeLock( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG:");
         wakeLock.acquire(3000);
     }

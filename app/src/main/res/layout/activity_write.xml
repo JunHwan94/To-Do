@@ -19,20 +19,20 @@
 
         <Button
             android:id="@+id/deleteButton"
-            android:layout_width="wrap_content"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
             android:background="@android:color/transparent"
             android:text="@string/delete"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toEndOf="@+id/backButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.100000024" />
 
         <Button
             android:id="@+id/saveButton"
-            android:layout_width="wrap_content"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:text="@string/save"
@@ -44,7 +44,7 @@
 
         <Button
             android:id="@+id/completeButton"
-            android:layout_width="wrap_content"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:text="@string/complete"
@@ -55,17 +55,27 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/notCompleteButton"
-            android:layout_width="wrap_content"
+            android:id="@+id/restoreButton"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            android:text="@string/not_complete"
+            android:text="@string/restore"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.333" />
+
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/ic_back_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </android.support.constraint.ConstraintLayout>
 
@@ -81,13 +91,12 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraint"
-        tools:text="제목" />
+        app:layout_constraintTop_toBottomOf="@+id/constraint" />
 
     <EditText
         android:id="@+id/content"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="200dp"
         android:layout_marginTop="10dp"
         android:ems="10"
         android:gravity="top"
@@ -97,80 +106,106 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title"
-        tools:text="설명" />
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 
-    <TextView
-        android:id="@+id/deadline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <!--<TextView-->
+        <!--android:id="@+id/deadline"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginStart="10dp"-->
+        <!--android:text="@string/deadline"-->
+        <!--android:textSize="20sp"-->
+        <!--app:layout_constraintBaseline_toBaselineOf="@+id/dateSelectButton"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/content" />-->
+
+    <Button
+        android:id="@+id/dateSelectButton"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
         android:layout_marginStart="10dp"
-        android:text="@string/deadline"
-        android:textSize="20sp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/dateSelectButton"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/button"
+        android:elevation="0dp"
+        android:text="@string/select_date"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toTopOf="@+id/timeSelectButton"
+        app:layout_constraintEnd_toStartOf="@+id/dCheckBox"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/content" />
 
     <Button
-        android:id="@+id/dateSelectButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:text="@string/select_date"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toStartOf="@+id/dCheckBox"
-        app:layout_constraintStart_toEndOf="@+id/deadline"
-        app:layout_constraintTop_toBottomOf="@+id/content" />
-
-    <Button
         android:id="@+id/timeSelectButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/button"
         android:text="@string/select_time"
-        android:textSize="20sp"
+        android:textSize="17sp"
         android:visibility="invisible"
-        app:layout_constraintBaseline_toBaselineOf="@+id/nCheckBox"
+        app:layout_constraintBottom_toTopOf="@+id/spinner"
         app:layout_constraintEnd_toStartOf="@+id/nCheckBox"
-        app:layout_constraintStart_toEndOf="@+id/notice"
-        app:layout_constraintTop_toBottomOf="@+id/dateSelectButton" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dateSelectButton" />
 
     <CheckBox
         android:id="@+id/dCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="10dp"
         android:button="@null"
         android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
         android:text="@string/no_deadline"
-        android:textSize="18sp"
+        android:textSize="17sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/dateSelectButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/content" />
 
-    <TextView
-        android:id="@+id/notice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/notice"
-        android:textSize="20sp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/nCheckBox"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dCheckBox" />
+    <!--<TextView-->
+        <!--android:id="@+id/notice"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginStart="10dp"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:text="@string/notice"-->
+        <!--android:textSize="20sp"-->
+        <!--app:layout_constraintBaseline_toBaselineOf="@+id/nCheckBox"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/dCheckBox" />-->
 
     <CheckBox
         android:id="@+id/nCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="10dp"
         android:button="@null"
         android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
         android:text="@string/notice_setting"
-        android:textSize="18sp"
+        android:textSize="17sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/timeSelectButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dCheckBox" />
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="0dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/button"
+        android:dropDownSelector="@drawable/button"
+        android:spinnerMode="dialog"
+        android:textAlignment="center"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timeSelectButton" />
 
 </android.support.constraint.ConstraintLayout>

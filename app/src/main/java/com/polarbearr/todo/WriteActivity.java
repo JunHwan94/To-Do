@@ -9,18 +9,24 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.polarbearr.todo.data.DatabaseHelper;
 import com.polarbearr.todo.data.TodoItem;
 
+import java.time.Year;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -42,11 +48,14 @@ public class WriteActivity extends AppCompatActivity {
     private CheckBox dCheckBox;
     private Button timeSelectButton;
     private CheckBox nCheckBox;
+    private Spinner spinner;
 
+    private Calendar cal;
     private String title;
     private String content;
     private String date;
     private String alarmTime;
+    private String repeatability;
     private int id;
     private boolean isNew = true;
     private boolean databaseChangeFlag = false;
@@ -54,8 +63,8 @@ public class WriteActivity extends AppCompatActivity {
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
     public static final String TYPE_KEY = "type";
-    private static final String SELECT_DATE = "-- 날짜 선택 --";
-    private static final String SELECT_TIME = "-- 시간 선택 --";
+    private static final String SELECT_DATE = "날짜 선택";
+    private static final String SELECT_TIME = "시간 선택";
     static final String DATE_NOT_SELECTED = "9999 - 12 - 31";
     static final String INSERT_TYPE = "insert";
     static final String UPDATE_TYPE = "update";
@@ -75,17 +84,20 @@ public class WriteActivity extends AppCompatActivity {
         alarmTime = intent.getStringExtra(ALARM_TIME_KEY);
         id = intent.getIntExtra(ID_KEY, 0);
         fragmentType = intent.getIntExtra(TYPE_KEY, 0);
+        cal = new GregorianCalendar();
 
         tvTitle = findViewById(R.id.title);
         tvContent = findViewById(R.id.content);
         Button deleteButton = findViewById(R.id.deleteButton);
         Button saveButton = findViewById(R.id.saveButton);
         Button completeButton = findViewById(R.id.completeButton);
-        Button notCompleteButton = findViewById(R.id.notCompleteButton);
+        Button restoreButton = findViewById(R.id.restoreButton);
+        Button backButton = findViewById(R.id.backButton);
         dateSelectButton = findViewById(R.id.dateSelectButton);
         dCheckBox = findViewById(R.id.dCheckBox);
         timeSelectButton = findViewById(R.id.timeSelectButton);
         nCheckBox = findViewById(R.id.nCheckBox);
+        spinner = findViewById(R.id.spinner);
 
         // 목록의 아이템을 눌러서 WriteActivity 실행했을 때 뷰 처리
         if(id != 0){
@@ -121,16 +133,21 @@ public class WriteActivity extends AppCompatActivity {
 
         switch(fragmentType){
             case 0: // 할일 이면
-                notCompleteButton.setVisibility(View.INVISIBLE);
+                restoreButton.setVisibility(View.INVISIBLE);
                 break;
             case 1: // 완료한 일이면
                 tvTitle.setEnabled(false);
                 tvContent.setEnabled(false);
+                tvContent.setHint("");
                 dateSelectButton.setEnabled(false);
                 dCheckBox.setEnabled(false);
-                nCheckBox.setEnabled(false);
+                nCheckBox.setVisibility(View.INVISIBLE);
                 completeButton.setVisibility(View.INVISIBLE);
                 saveButton.setVisibility(View.INVISIBLE);
+
+                if(dCheckBox.isChecked())
+                    dateSelectButton.setVisibility(View.INVISIBLE);
+                else dCheckBox.setVisibility(View.INVISIBLE);
                 break;
         }
 
@@ -142,7 +159,7 @@ public class WriteActivity extends AppCompatActivity {
 
         // 완료, 미완료 버튼 이벤트
         setCompleteOrNotButtonListener(completeButton);
-        setCompleteOrNotButtonListener(notCompleteButton);
+        setCompleteOrNotButtonListener(restoreButton);
 
         // 날짜 선택 버튼 이벤트 처리
         setDateSelectButtonListener();
@@ -155,33 +172,106 @@ public class WriteActivity extends AppCompatActivity {
 
         // 알림설정 체크박스 클릭이벤트
         setCheckBoxListener(nCheckBox, NOTICE_TYPE);
+
+        String[] items = {"반복 안함", "매일", "매주", "매월", "매년"};
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, items);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                repeatability = items[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        // 뒤로가기 버튼 이벤트
+        backButton.setOnClickListener( v-> onBackPressed() );
     }
 
     // 시간 선택 버튼 이벤트 처리
     private void setTimeSelectButtonListener(){
         timeSelectButton.setOnClickListener(new View.OnClickListener() {
+            int sHour;
+            int sMinute;
             @Override
             public void onClick(View v) {
-                new TimePickerDialog(WriteActivity.this, timeSetListener, 0, 0, DateFormat.is24HourFormat(getBaseContext())).show();
+                sHour = cal.get(Calendar.HOUR_OF_DAY);
+                sMinute = cal.get(Calendar.MINUTE);
+                new TimePickerDialog(WriteActivity.this, timeSetListener, sHour, sMinute, DateFormat.is24HourFormat(getBaseContext())).show();
             }
 
             TimePickerDialog.OnTimeSetListener timeSetListener =
                     new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                            // 오전
-                            String noticeTime = "오전 " + hourOfDay + " : " + minute;
-                            int hour = hourOfDay;
-                            if(minute < 10) noticeTime = "오전 " + hour + " : 0" + minute;
+                            if(sHour <= hourOfDay && sMinute < minute
+                                    || sHour < hourOfDay) {
+                                // 오전
+                                String noticeTime = "오전 " + hourOfDay + " : " + minute;
+                                int hour = hourOfDay;
+                                if (minute < 10) noticeTime = "오전 " + hour + " : 0" + minute;
 
-                            // 오후
-                            if(12 <= hourOfDay){
-                                if(hourOfDay != 12) hour = hourOfDay - 12;
-                                noticeTime = "오후 " + hour + " : " + minute;
-                                if(minute < 10) noticeTime = "오후 " + hour + " : 0" + minute;
-                            }
-                            timeSelectButton.setText(noticeTime);
+                                // 오후
+                                if (12 <= hourOfDay) {
+                                    if (hourOfDay != 12) hour = hourOfDay - 12;
+                                    noticeTime = "오후 " + hour + " : " + minute;
+                                    if (minute < 10) noticeTime = "오후 " + hour + " : 0" + minute;
+                                }
+                                timeSelectButton.setText(noticeTime);
+                            }else Toast.makeText(getBaseContext(), "현재보다 미래 시간를 선택하세요", Toast.LENGTH_SHORT).show();
                         }
+                    };
+        });
+    }
+
+    // 날짜 선택 버튼 이벤트 처리
+    private void setDateSelectButtonListener() {
+        dateSelectButton.setOnClickListener(new View.OnClickListener() {
+            int sYear;
+            int sMonth;
+            int sDay;
+
+            @Override
+            public void onClick(View v) {
+                String buttonText = dateSelectButton.getText().toString();
+                // 날짜 이미 선택한 상태면 텍스트에서 불러오기
+                if(!buttonText.equals(SELECT_DATE)){
+                    sYear = Integer.valueOf(buttonText.split(" - ")[0]);
+                    sMonth = Integer.valueOf(buttonText.split(" - ")[1]) - 1;
+                    sDay = Integer.valueOf(buttonText.split(" - ")[2]);
+                }else{
+                    sYear = cal.get(Calendar.YEAR);
+                    sMonth = cal.get(Calendar.MONTH);
+                    sDay = cal.get(Calendar.DAY_OF_MONTH);
+                }
+                new DatePickerDialog(WriteActivity.this, dateSetListener, sYear, sMonth, sDay).show();
+            }
+
+            DatePickerDialog.OnDateSetListener dateSetListener =
+                    new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                            if(cal.get(Calendar.YEAR) <= year && cal.get(Calendar.MONTH) <= month && cal.get(Calendar.DAY_OF_MONTH) <= dayOfMonth
+                                    || cal.get(Calendar.YEAR) <= year && cal.get(Calendar.MONTH) < month
+                                    || cal.get(Calendar.YEAR) < year) {
+                                String date;
+                                if (month < 10) {
+                                    date = year + " - 0" + (month + 1) + " - " + dayOfMonth;
+                                    if (dayOfMonth < 10)
+                                        date = year + " - 0" + (month + 1) + " - 0" + dayOfMonth;
+                                } else {
+                                    date = year + " - " + (month + 1) + " - " + dayOfMonth;
+                                    if (dayOfMonth < 10)
+                                        date = year + " - " + (month + 1) + " - 0" + dayOfMonth;
+                                }
+                                dateSelectButton.setText(date);
+                            }
+                            else Toast.makeText(getBaseContext(), "현재보다 미래 날짜를 선택하세요", Toast.LENGTH_SHORT).show();
+                        }
+
                     };
         });
     }
@@ -203,6 +293,8 @@ public class WriteActivity extends AppCompatActivity {
                             nCheckBox.setChecked(false);
                             timeSelectButton.setEnabled(false);
                             timeSelectButton.setVisibility(View.INVISIBLE);
+                            spinner.setVisibility(View.INVISIBLE);
+                            spinner.setVisibility(View.INVISIBLE);
                         } else {
                             dateSelectButton.setEnabled(true);
                             dateSelectButton.setTextColor(Color.BLACK);
@@ -214,56 +306,17 @@ public class WriteActivity extends AppCompatActivity {
                         if(!checkBox.isChecked()) {
                             timeSelectButton.setEnabled(false);
                             timeSelectButton.setVisibility(View.INVISIBLE);
+                            spinner.setVisibility(View.INVISIBLE);
+                            spinner.setSelection(0);
                         } else {
                             timeSelectButton.setEnabled(true);
                             timeSelectButton.setVisibility(View.VISIBLE);
                             timeSelectButton.setText(R.string.select_time);
+                            spinner.setVisibility(View.VISIBLE);
                         }
                         break;
                 }
             }
-        });
-    }
-
-    // 날짜 선택 버튼 이벤트 처리
-    private void setDateSelectButtonListener() {
-        final String buttonText = dateSelectButton.getText().toString();
-        dateSelectButton.setOnClickListener(new View.OnClickListener() {
-            Calendar cal = new GregorianCalendar();
-            int sYear = cal.get(Calendar.YEAR);
-            int sMonth = cal.get(Calendar.MONTH);
-            int sDay = cal.get(Calendar.DAY_OF_MONTH);
-
-            @Override
-            public void onClick(View v) {
-                if(!buttonText.equals(SELECT_DATE)){
-                    sYear = Integer.valueOf(buttonText.split(" - ")[0]);
-                    sMonth = Integer.valueOf(buttonText.split(" - ")[1]) - 1;
-                    sDay = Integer.valueOf(buttonText.split(" - ")[2]);
-                }
-                new DatePickerDialog(WriteActivity.this, dateSetListener, sYear, sMonth, sDay).show();
-            }
-
-            DatePickerDialog.OnDateSetListener dateSetListener =
-                    new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                            sYear = year;
-                            sMonth = month;
-                            sDay = dayOfMonth;
-                            String date;
-                            if (sMonth < 10) {
-                                date = sYear + " - 0" + (sMonth + 1) + " - " + sDay;
-                                if (sDay < 10)
-                                    date = sYear + " - 0" + (sMonth + 1) + " - 0" + sDay;
-                                } else {
-                                date = sYear + " - " + (sMonth + 1) + " - " + sDay;
-                                if (sDay < 10)
-                                    date = sYear + " - " + (sMonth + 1) + " - 0" + sDay;
-                                }
-                                dateSelectButton.setText(date);
-                        }
-                    };
         });
     }
 
@@ -280,14 +333,10 @@ public class WriteActivity extends AppCompatActivity {
     public void deleteItem(){
         switch(fragmentType){
             case 0:
-                new Thread(() -> {
-                        DatabaseHelper.deleteData(TODO_TABLE, id);
-                }).start();
+                DatabaseHelper.deleteData(TODO_TABLE, id);
                 break;
             case 1:
-                new Thread(() -> {
-                        DatabaseHelper.deleteData(COMPLETED_TABLE, id);
-                }).start();
+                DatabaseHelper.deleteData(COMPLETED_TABLE, id);
                 break;
         }
 
@@ -305,6 +354,7 @@ public class WriteActivity extends AppCompatActivity {
                 content = tvContent.getText().toString();
                 date = dateSelectButton.getText().toString();
                 alarmTime = timeSelectButton.getText().toString();
+
                 // 기한 없음 체크했을 때
                 if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
 
@@ -317,8 +367,10 @@ public class WriteActivity extends AppCompatActivity {
                 // 날짜 선택 안했을 때
                 else if(date.equals(SELECT_DATE))
                     Toast.makeText(getBaseContext(), R.string.dateselect_toast, Toast.LENGTH_SHORT).show();
+
                 // 수정할 때
-                else if (!isNew) writeTodo(UPDATE_TYPE);
+                else if(!isNew) writeTodo(UPDATE_TYPE);
+
                 // 새로운 할일을 작성할 때
                 else writeTodo(INSERT_TYPE);
             }
@@ -326,7 +378,7 @@ public class WriteActivity extends AppCompatActivity {
             public void writeTodo(String type){
                 TodoItem item = new TodoItem(title, content, date, alarmTime, id);
                 processData(item, type);
-                if(nCheckBox.isChecked()){
+                if(nCheckBox.isChecked() && !timeSelectButton.getText().toString().equals(SELECT_TIME)){
                     setAlarm();
                 }
 
@@ -335,17 +387,14 @@ public class WriteActivity extends AppCompatActivity {
 
             public void processData(TodoItem item, final String type){
                 giveData.putParcelable(TODO_ITEM, item);
-                new Thread(() -> {
-                        switch (type){
-                            case INSERT_TYPE:
-                                DatabaseHelper.insertData(TODO_TABLE, giveData);
-                                break;
-                            case UPDATE_TYPE:
-                                DatabaseHelper.updateData(TODO_TABLE, giveData);
-                                break;
-                        }
-                    }
-                ).start();
+                switch (type){
+                    case INSERT_TYPE:
+                        DatabaseHelper.insertData(TODO_TABLE, giveData);
+                        break;
+                    case UPDATE_TYPE:
+                        DatabaseHelper.updateData(TODO_TABLE, giveData);
+                        break;
+                }
                 databaseChangeFlag = true;
             }
         });
@@ -368,9 +417,6 @@ public class WriteActivity extends AppCompatActivity {
             // 기존 목록에서 삭제
             deleteAlarm();
             deleteItem();
-            new Thread(() -> {
-                DatabaseHelper.deleteData(tableName, id);
-            }).start();
 
             // 반대 목록에 추가
             try {
@@ -383,6 +429,8 @@ public class WriteActivity extends AppCompatActivity {
             title = tvTitle.getText().toString();
             content = tvContent.getText().toString();
             date = dateSelectButton.getText().toString();
+            date = date.equals(SELECT_DATE) ? DATE_NOT_SELECTED : date;
+
             // 기한 없음 체크했을 때
             if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
 
@@ -412,7 +460,7 @@ public class WriteActivity extends AppCompatActivity {
 
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, month - 1);    // 1 작은 숫자를 설정해줘야 제대로 작동함. DatePicker가 1 작은 값을 반환하는 것과 같은듯
+        calendar.set(Calendar.MONTH, month - 1);    // 인덱스 방식 / 1 작은 숫자를 설정해줘야 제대로 작동함. DatePicker가 1 작은 값을 반환하는 것과 같은듯
         calendar.set(Calendar.DATE, day);
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
@@ -433,18 +481,13 @@ public class WriteActivity extends AppCompatActivity {
         final AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         // 선택한 날짜, 시간으로 알람 설정
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+        new Thread(() ->
                 alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         calendar.getTimeInMillis(),
                         pendingIntent
-                );
-            }
-        }).start();
-
-//        System.out.println(year + "년 " + month + "월 " +  day + "일 " + hour + "시 " + minute + "분으로 알람 설정됨");
+                )
+        ).start();
     }
 
     // 설정된 알람 삭제
@@ -479,7 +522,6 @@ public class WriteActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(DATABASE_FLAG_KEY, databaseChangeFlag);
-//        intent.putExtra(TYPE_KEY, listType);
         setResult(RESULT_OK, intent);
         finish();
     }

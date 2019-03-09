@@ -13,14 +13,14 @@
     <string name="save">저장</string>
     <string name="delete">삭제</string>
     <string name="complete">완료</string>
-    <string name="not_complete">미완료</string>
+    <string name="restore">복원</string>
 
-    <string name="deadline">기한</string>
     <string name="no_deadline">기한 없음</string>
-    <string name="select_date">-- 날짜 선택 --</string>
-    <string name="select_time">-- 시간 선택 --</string>
+    <string name="select_date">날짜 선택</string>
+    <string name="select_time">시간 선택</string>
     <string name="notice">알림</string>
     <string name="notice_setting">알림 설정</string>
+    <string name="repeat">반복</string>
 
     <string name="app_ad_id">ca-app-pub-4270520106393473~2526720796</string>
     <string name="banner_id">ca-app-pub-4270520106393473/5698845865</string>

@@ -21,10 +21,8 @@ import com.polarbearr.todo.data.TodoItem;
 
 import static com.polarbearr.todo.MainActivity.TODO_KEY;
 import static com.polarbearr.todo.WriteActivity.TYPE_KEY;
-import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
-import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
 import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
 public class ListFragment extends Fragment {
@@ -34,7 +32,7 @@ public class ListFragment extends Fragment {
     public static final String DATE_KEY = "datekey";
     static final String GREATEST_ID_KEY = "greatestidkey";
     public static final String ALARM_TIME_KEY = "alarmtimekey";
-    static final String NOTHING = "없음";
+    static final String NOTHING = "기한 없음";
     static final int WRITE_REQUEST_CODE = 101;
 
     private Bundle loadedData;
@@ -77,7 +75,7 @@ public class ListFragment extends Fragment {
         if(bundle != null) processBundle(bundle);
 
         // 리사이클러뷰에 어댑터 설정
-        setTodoAdapter();
+        setTodoAdapter(loadedData);
 
         return rootView;
     }
@@ -92,20 +90,14 @@ public class ListFragment extends Fragment {
                 loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
                 break;
             case 1:
+                // 완료한 일 데이터베이스에서 불러오기
                 loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
                 fab.setVisibility(View.INVISIBLE);
-                // 완료한 일 데이터베이스에서 불러오기
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        loadedData = DatabaseHelper.selectData(DatabaseHelper.COMPLETED_TABLE);
-//                    }
-//                }).start();
                 break;
         }
     }
 
-    public void setTodoAdapter(){
+    public void setTodoAdapter(Bundle loadedData){
         final TodoAdapter adapter = new TodoAdapter(getContext());
         Bundle itemBundle;
         TodoItem item;
@@ -177,37 +169,23 @@ public class ListFragment extends Fragment {
         super.onDetach();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        // 리사이클러뷰 목록 업데이트
-        if(data != null) {
-            boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
-            if(databaseChangeFlag == true) {
-                switch(fragmentType){
-                    case 0:
-                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
-                        break;
-                    case 1:
-                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
-                        break;
-                }
-                setTodoAdapter();
-            }
-        }
-    }
-
-    @Override
-    public void onResume() {
-        switch(fragmentType){
-            case 0:
-                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
-                break;
-            case 1:
-                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
-                break;
-        }
-        setTodoAdapter();
-        super.onResume();
-    }
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//         리사이클러뷰 목록 업데이트
+//        if(data != null) {
+//            boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
+//            if(databaseChangeFlag == true) {
+//                switch(fragmentType){
+//                    case 0:
+//                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
+//                        break;
+//                    case 1:
+//                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
+//                        break;
+//                }
+//                setTodoAdapter();
+//            }
+//        }
+//    }
 }
