@@ -88,7 +88,7 @@
         android:hint="제목"
         android:inputType="textPersonName"
         android:padding="10dp"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/constraint" />
@@ -103,21 +103,10 @@
         android:hint="설명"
         android:inputType="textMultiLine"
         android:padding="10dp"
-        android:textSize="20sp"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title" />
-
-    <!--<TextView-->
-        <!--android:id="@+id/deadline"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginStart="10dp"-->
-        <!--android:text="@string/deadline"-->
-        <!--android:textSize="20sp"-->
-        <!--app:layout_constraintBaseline_toBaselineOf="@+id/dateSelectButton"-->
-        <!--app:layout_constraintStart_toStartOf="parent"-->
-        <!--app:layout_constraintTop_toBottomOf="@+id/content" />-->
 
     <Button
         android:id="@+id/dateSelectButton"
@@ -142,13 +131,12 @@
         android:layout_width="0dp"
         android:layout_height="35dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:background="@drawable/button"
         android:text="@string/select_time"
         android:textSize="17sp"
         android:visibility="invisible"
-        app:layout_constraintBottom_toTopOf="@+id/spinner"
         app:layout_constraintEnd_toStartOf="@+id/nCheckBox"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -167,18 +155,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/content" />
 
-    <!--<TextView-->
-        <!--android:id="@+id/notice"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginStart="10dp"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:text="@string/notice"-->
-        <!--android:textSize="20sp"-->
-        <!--app:layout_constraintBaseline_toBaselineOf="@+id/nCheckBox"-->
-        <!--app:layout_constraintStart_toStartOf="parent"-->
-        <!--app:layout_constraintTop_toBottomOf="@+id/dCheckBox" />-->
-
     <CheckBox
         android:id="@+id/nCheckBox"
         android:layout_width="wrap_content"
@@ -188,24 +164,25 @@
         android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
         android:text="@string/notice_setting"
         android:textSize="17sp"
+        android:visibility="invisible"
         app:layout_constraintBaseline_toBaselineOf="@+id/timeSelectButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dCheckBox" />
 
-    <Spinner
-        android:id="@+id/spinner"
-        android:layout_width="0dp"
-        android:layout_height="35dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/button"
-        android:dropDownSelector="@drawable/button"
-        android:spinnerMode="dialog"
-        android:textAlignment="center"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/timeSelectButton" />
+    <!--<Spinner-->
+        <!--android:id="@+id/spinner"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="35dp"-->
+        <!--android:layout_marginStart="10dp"-->
+        <!--android:layout_marginTop="10dp"-->
+        <!--android:layout_marginEnd="10dp"-->
+        <!--android:background="@drawable/button"-->
+        <!--android:dropDownSelector="@drawable/button"-->
+        <!--android:spinnerMode="dialog"-->
+        <!--android:textAlignment="center"-->
+        <!--android:visibility="invisible"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/timeSelectButton" />-->
 
 </android.support.constraint.ConstraintLayout>

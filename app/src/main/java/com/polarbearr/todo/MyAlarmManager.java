@@ -7,26 +7,27 @@ import android.content.Intent;
 
 import java.util.Calendar;
 
-import static com.polarbearr.todo.ListFragment.CONTENT_KEY;
-import static com.polarbearr.todo.ListFragment.ID_KEY;
-import static com.polarbearr.todo.ListFragment.TITLE_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.ALARM_TIME_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.DATE_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.REPEATABILITY_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.ID_KEY;
 
 public class MyAlarmManager{
     static final String PM = "오후";
 
-    public void setAlarm(Context context, String date, String time, String title, String content, int id){
-//        String dateButtonText = dateSelectButton.getText().toString();
-//        String timeButtonText = timeSelectButton.getText().toString();
-        String ap = time.split(" ")[0];
+    public static void setAlarm(Context context, String date, String alarmTime, String title, String content, String repeatability, int id){
+        String ap = alarmTime.split(" ")[0];
 
         int year = Integer.valueOf(date.split(" - ")[0]);
         int month  = Integer.valueOf(date.split(" - ")[1]);
         int day = Integer.valueOf(date.split(" - ")[2]);
-        int hour = Integer.valueOf(time.split(" : ")[0].split(" ")[1]);
+        int hour = Integer.valueOf(alarmTime.split(" : ")[0].split(" ")[1]);
         if(ap.equals(PM) && hour != 12){
             hour += 12;
         }
-        int minute = Integer.valueOf(time.split(" : ")[1]);
+        int minute = Integer.valueOf(alarmTime.split(" : ")[1]);
 
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
@@ -36,8 +37,11 @@ public class MyAlarmManager{
         calendar.set(Calendar.MINUTE, minute);
 
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+        alarmIntent.putExtra(DATE_KEY, date);
+        alarmIntent.putExtra(ALARM_TIME_KEY, alarmTime);
         alarmIntent.putExtra(TITLE_KEY, title);
         alarmIntent.putExtra(CONTENT_KEY, content);
+        alarmIntent.putExtra(REPEATABILITY_KEY, repeatability);
         alarmIntent.putExtra(ID_KEY, id);
 
         final PendingIntent pendingIntent =
@@ -60,7 +64,7 @@ public class MyAlarmManager{
         }).start();
     }
 
-    public void deleteAlarm(Context context, int id){
+    public static void deleteAlarm(Context context, int id){
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
 
         PendingIntent pendingIntent =

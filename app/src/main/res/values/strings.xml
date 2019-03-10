@@ -22,6 +22,11 @@
     <string name="notice_setting">알림 설정</string>
     <string name="repeat">반복</string>
 
+    <string name="select_time_please">알림 시간을 설정하세요</string>
+    <string name="select_future_date">현재보다 미래 날짜를 선택하세요</string>
+    <string name="select_future_time">현재보다 미래 시간을 선택하세요</string>
+
+
     <string name="app_ad_id">ca-app-pub-4270520106393473~2526720796</string>
     <string name="banner_id">ca-app-pub-4270520106393473/5698845865</string>
 </resources>

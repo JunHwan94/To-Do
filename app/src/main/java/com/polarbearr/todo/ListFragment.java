@@ -21,17 +21,19 @@ import com.polarbearr.todo.data.TodoItem;
 
 import static com.polarbearr.todo.MainActivity.TODO_KEY;
 import static com.polarbearr.todo.WriteActivity.TYPE_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.ALARM_TIME_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
+import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.DATE_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.GREATEST_ID_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.ID_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.REPEATABILITY_KEY;
+import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
 public class ListFragment extends Fragment {
-    public static final String TITLE_KEY = "titlekey";
-    public static final String CONTENT_KEY = "contentkey";
-    public static final String ID_KEY = "idkey";
-    public static final String DATE_KEY = "datekey";
-    static final String GREATEST_ID_KEY = "greatestidkey";
-    public static final String ALARM_TIME_KEY = "alarmtimekey";
     static final String NOTHING = "기한 없음";
     static final int WRITE_REQUEST_CODE = 101;
 
@@ -87,11 +89,11 @@ public class ListFragment extends Fragment {
         switch(fragmentType){
             case 0:
                 // 할 일 데이터베이스에서 불러오기
-                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
+                loadedData = DatabaseHelper.selectAllData(TODO_TABLE);
                 break;
             case 1:
                 // 완료한 일 데이터베이스에서 불러오기
-                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
+                loadedData = DatabaseHelper.selectAllData(COMPLETED_TABLE);
                 fab.setVisibility(View.INVISIBLE);
                 break;
         }
@@ -109,11 +111,12 @@ public class ListFragment extends Fragment {
                 String content = itemBundle.getString(CONTENT_KEY);
                 String date = itemBundle.getString(DATE_KEY);
                 String alarmTime = itemBundle.getString(ALARM_TIME_KEY);
+                String repeatability = itemBundle.getString(REPEATABILITY_KEY);
                 // 날짜 선택안한 데이터 불러오면 없음으로 표시
                 if(date.equals(DATE_NOT_SELECTED)) date = NOTHING;
                 int id = itemBundle.getInt(ID_KEY);
 
-                item = new TodoItem(title, content, date, alarmTime, id);
+                item = new TodoItem(title, content, date, alarmTime, repeatability, id);
                 adapter.addItem(item);
             }
             count = adapter.getItemCount();
@@ -126,6 +129,7 @@ public class ListFragment extends Fragment {
                     String content = item.getContent();
                     String date = item.getDate();
                     String alarmTime = item.getAlarmTime();
+                    String repeatability = item.getRepeatability();
                     int id = item.getId();
 
                     Intent intent = new Intent(getContext().getApplicationContext(), WriteActivity.class);
@@ -134,12 +138,12 @@ public class ListFragment extends Fragment {
                     intent.putExtra(ID_KEY, id);
                     intent.putExtra(DATE_KEY, date);
                     intent.putExtra(ALARM_TIME_KEY, alarmTime);
+                    intent.putExtra(REPEATABILITY_KEY, repeatability);
                     intent.putExtra(TYPE_KEY, fragmentType);
 
                     startActivityForResult(intent, WRITE_REQUEST_CODE);
                 }
             });
-
             recyclerView.setAdapter(adapter);
         }
     }
@@ -168,24 +172,4 @@ public class ListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
     }
-
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//         리사이클러뷰 목록 업데이트
-//        if(data != null) {
-//            boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
-//            if(databaseChangeFlag == true) {
-//                switch(fragmentType){
-//                    case 0:
-//                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
-//                        break;
-//                    case 1:
-//                        loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
-//                        break;
-//                }
-//                setTodoAdapter();
-//            }
-//        }
-//    }
 }

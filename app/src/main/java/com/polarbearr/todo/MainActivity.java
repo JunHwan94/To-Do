@@ -18,8 +18,10 @@ import com.polarbearr.todo.data.DatabaseHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.polarbearr.todo.ListFragment.WRITE_REQUEST_CODE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
+import static com.polarbearr.todo.data.DatabaseHelper.ID_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 
 public class MainActivity extends AppCompatActivity{
@@ -29,8 +31,7 @@ public class MainActivity extends AppCompatActivity{
     static final String TODO_KEY = "0";
     static final String TODO_DB = "todoDB";
 
-    ListFragment fragment1;
-    ListFragment fragment2;
+    ListFragment[] fragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,32 +51,34 @@ public class MainActivity extends AppCompatActivity{
         AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
+
+//        Intent intent = getIntent();
+//        processIntent(intent);
     }
+
+    // 인텐트처리
+//    public void processIntent(Intent intent){
+//        int id = intent.getIntExtra(ID_KEY, 0);
+//        Toast.makeText(getBaseContext(), "id = " + id, Toast.LENGTH_SHORT).show();
+//        intent = new Intent(getApplicationContext(), WriteActivity.class);
+//        intent.putExtra(ID_KEY, id);
+//        if(id != 0)
+//            startActivityForResult(intent, WRITE_REQUEST_CODE);
+//    }
 
     // 어댑터 설정
     public void setFragment(){
         ListPagerAdapter adapter = new ListPagerAdapter(getSupportFragmentManager());
-//        ListFragment fragment;
-//        Bundle bundle;
 
-        // 페이저 어댑터에 미완료, 완료 목록 프래그먼트 추가
-//        for(int i = 0; i < 2; i++) {
-//            fragment = new ListFragment();
-//            bundle = new Bundle();
-//            bundle.putInt(TODO_KEY, i);
-//            fragment.setArguments(bundle);
-//            adapter.addItem(fragment);
-//        }
-        fragment1 = new ListFragment();
-        fragment2 = new ListFragment();
-        Bundle bundle1 = new Bundle();
-        Bundle bundle2 = new Bundle();
-        bundle1.putInt(TODO_KEY, 0);
-        bundle2.putInt(TODO_KEY, 1);
-        fragment1.setArguments(bundle1);
-        fragment2.setArguments(bundle2);
-        adapter.addItem(fragment1);
-        adapter.addItem(fragment2);
+        fragment = new ListFragment[2];
+        Bundle[] bundle = new Bundle[2];
+        for(int i = 0; i < 2; i++){
+            fragment[i] = new ListFragment();
+            bundle[i] = new Bundle();
+            bundle[i].putInt(TODO_KEY, i);
+            fragment[i].setArguments(bundle[i]);
+            adapter.addItem(fragment[i]);
+        }
 
         pager.setAdapter(adapter);
     }
@@ -108,11 +111,11 @@ public class MainActivity extends AppCompatActivity{
         // 리사이클러뷰 목록 업데이트
         if(data != null) {
             boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
-            if(databaseChangeFlag == true) {
-                Bundle loadedData = DatabaseHelper.selectAllData(DatabaseHelper.TODO_TABLE);
-                fragment1.setTodoAdapter(loadedData);
-                loadedData = DatabaseHelper.selectAllData(DatabaseHelper.COMPLETED_TABLE);
-                fragment2.setTodoAdapter(loadedData);
+            if(Boolean.valueOf(databaseChangeFlag)) {
+                Bundle loadedData = DatabaseHelper.selectAllData(TODO_TABLE);
+                fragment[0].setTodoAdapter(loadedData);
+                loadedData = DatabaseHelper.selectAllData(COMPLETED_TABLE);
+                fragment[1].setTodoAdapter(loadedData);
             }
         }
     }

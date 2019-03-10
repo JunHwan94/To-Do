@@ -9,12 +9,14 @@ public class TodoItem implements Parcelable {
     private int id;
     private String date;
     private String alarmTime;
+    private String repeatability;
 
-    public TodoItem(String title, String content, String date, String alarmTime, int id) {
+    public TodoItem(String title, String content, String date, String alarmTime, String repeatability, int id) {
         this.title = title;
         this.content = content;
         this.date = date;
         this.alarmTime = alarmTime;
+        this.repeatability = repeatability;
         this.id = id;
     }
 
@@ -23,6 +25,7 @@ public class TodoItem implements Parcelable {
         content = in.readString();
         date = in.readString();
         alarmTime = in.readString();
+        repeatability = in.readString();
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
@@ -77,6 +80,14 @@ public class TodoItem implements Parcelable {
         this.id = id;
     }
 
+    public String getRepeatability() {
+        return repeatability;
+    }
+
+    public void setRepeatability(String repeatability) {
+        this.repeatability = repeatability;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -88,5 +99,6 @@ public class TodoItem implements Parcelable {
         dest.writeString(content);
         dest.writeString(date);
         dest.writeString(alarmTime);
+        dest.writeString(repeatability);
     }
 }
