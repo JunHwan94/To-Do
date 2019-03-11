@@ -37,7 +37,7 @@ public class MyAlarmManager{
         calendar.set(Calendar.MINUTE, minute);
 
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
-        alarmIntent.putExtra(DATE_KEY, date);
+//        alarmIntent.putExtra(DATE_KEY, date);
         alarmIntent.putExtra(ALARM_TIME_KEY, alarmTime);
         alarmIntent.putExtra(TITLE_KEY, title);
         alarmIntent.putExtra(CONTENT_KEY, content);

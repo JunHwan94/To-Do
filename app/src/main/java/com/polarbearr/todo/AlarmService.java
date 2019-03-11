@@ -11,7 +11,11 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.util.Log;
 import android.view.WindowManager;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import static com.polarbearr.todo.WriteActivity.EVERY_DAY;
 import static com.polarbearr.todo.WriteActivity.EVERY_MONTH;
@@ -19,7 +23,6 @@ import static com.polarbearr.todo.WriteActivity.EVERY_WEEK;
 import static com.polarbearr.todo.WriteActivity.EVERY_YEAR;
 import static com.polarbearr.todo.WriteActivity.NO_REPEAT;
 import static com.polarbearr.todo.data.DatabaseHelper.ALARM_TIME_KEY;
-import static com.polarbearr.todo.data.DatabaseHelper.DATE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.REPEATABILITY_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
@@ -29,6 +32,7 @@ public class AlarmService extends Service {
     private static final String APP_NAME = "To Do";
     private static final String CHANNEL_ID = "cid";
     private static final String CHANNEL_DESCRIPTION = "할일 알림";
+    private static final long systemTimePerDay = 86400000L;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -51,7 +55,7 @@ public class AlarmService extends Service {
     }
 
     public void processIntent(Intent intent){
-        String date = intent.getStringExtra(DATE_KEY);
+        String date;
         String alarmTime = intent.getStringExtra(ALARM_TIME_KEY);
         String title = intent.getStringExtra(TITLE_KEY);
         String content = intent.getStringExtra(CONTENT_KEY);
@@ -60,22 +64,67 @@ public class AlarmService extends Service {
 
         setNotification(title, content, id);
 
-//        Calendar cal = new GregorianCalendar();
-//        if(!repeatability.equals(NO_REPEAT)) {
-//            switch (repeatability) {
-//                case EVERY_DAY:
-//                    break;
-//                case EVERY_WEEK:
-//                    break;
-//                case EVERY_MONTH:
-//                    break;
-//                case EVERY_YEAR:
-//                    break;
-//            }
-//            // 다음 알람 설정
-//            MyAlarmManager.setAlarm(getApplicationContext(), date, alarmTime, title, content, repeatability, id);
-//            Log.d("다음 알람", date);
-//        }
+        // 반복하면 다음 알람 설정
+        if(!repeatability.equals(NO_REPEAT)) {
+            Calendar cal = setNextSystemTime(repeatability);
+            date = cal.get(Calendar.YEAR) + " - " + (cal.get(Calendar.MONTH)+1) + " - " + cal.get(Calendar.DAY_OF_MONTH);
+//            Log.d("다음 날짜", date);
+            MyAlarmManager.setAlarm(getApplicationContext(), date, alarmTime, title, content, repeatability, id);
+        }
+    }
+
+    public Calendar setNextSystemTime(String repeatability){
+        Calendar cal = new GregorianCalendar();
+        int thisYear = cal.get(Calendar.YEAR);
+        boolean isLeapYear = thisYear % 4 == 0 && thisYear % 100 != 0 || thisYear % 400 == 0;
+        int nextYear = thisYear + 1;
+        boolean nextIsLeapYear = nextYear % 4 == 0 && nextYear % 100 != 0 || nextYear % 400 == 0;
+        int thisMonth = cal.get(Calendar.MONTH) + 1;
+        int thisDay = cal.get(Calendar.DAY_OF_MONTH);
+        boolean isEvenMonth = thisMonth % 2 == 0;
+        long systemTime = cal.getTimeInMillis();
+
+        switch (repeatability) {
+            case EVERY_DAY:
+                systemTime += systemTimePerDay;
+                break;
+            case EVERY_WEEK:
+                systemTime += systemTimePerDay * 7;
+                break;
+            case EVERY_MONTH:
+                if(thisMonth < 8 && thisMonth != 2){
+                    if(isEvenMonth) systemTime += systemTimePerDay * 30;
+                    else systemTime += systemTimePerDay * 31;
+                }else if(thisMonth <= 8){
+                    if(isEvenMonth) systemTime += systemTimePerDay * 31;
+                    else systemTime += systemTimePerDay * 30;
+                }else{
+                    if(isLeapYear)
+                        systemTime += systemTimePerDay * 29;
+                    else systemTime += systemTimePerDay * 28;
+                }
+                break;
+            case EVERY_YEAR:
+                if(isLeapYear) { // 윤년일 때
+                    if(thisMonth == 1 || thisMonth == 2 && thisDay != 29) // 1월이거나 2월 29일 이전이면 1일 더해야함
+                        systemTime = addDays(systemTime, true);
+                    else
+                        systemTime = addDays(systemTime, false);
+                }
+                else { // 윤년이 아닐 때
+                    if(nextIsLeapYear && 2 < thisMonth) // 다음해가 윤년이고 지금 2월 이후면 1일 더함
+                        systemTime = addDays(systemTime, true);
+                    else systemTime = addDays(systemTime, false);
+                }
+                break;
+        }
+        cal.setTimeInMillis(systemTime);
+        return cal;
+    }
+
+    public long addDays(long systemTime, boolean addOneMore){
+        systemTime += addOneMore ? systemTimePerDay * 366 : systemTimePerDay * 365;
+        return systemTime;
     }
 
     // 가져온 제목 내용으로 알람 설정

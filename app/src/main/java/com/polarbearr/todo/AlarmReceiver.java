@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import static com.polarbearr.todo.data.DatabaseHelper.ALARM_TIME_KEY;
-import static com.polarbearr.todo.data.DatabaseHelper.DATE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.REPEATABILITY_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
@@ -15,7 +14,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String date = intent.getStringExtra(DATE_KEY);
         String alarmTime = intent.getStringExtra(ALARM_TIME_KEY);
         String title = intent.getStringExtra(TITLE_KEY);
         String content = intent.getStringExtra(CONTENT_KEY);
@@ -23,7 +21,6 @@ public class AlarmReceiver extends BroadcastReceiver {
         int id = intent.getIntExtra(ID_KEY, 0);
 
         Intent serviceIntent = new Intent(context, AlarmService.class);
-        serviceIntent.putExtra(DATE_KEY, date);
         serviceIntent.putExtra(ALARM_TIME_KEY, alarmTime);
         serviceIntent.putExtra(TITLE_KEY, title);
         serviceIntent.putExtra(CONTENT_KEY, content);
