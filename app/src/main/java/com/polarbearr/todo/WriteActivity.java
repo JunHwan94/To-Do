@@ -163,8 +163,6 @@ public class WriteActivity extends AppCompatActivity {
                 dCheckBox.setChecked(true);
                 dateSelectButton.setEnabled(false);
                 dateSelectButton.setTextColor(Color.LTGRAY);
-                nCheckBox.setEnabled(false);
-                nCheckBox.setTextColor(Color.LTGRAY);
             }
         }
         // + 버튼을 눌러서 WriteActivity 실행했을 때
@@ -319,6 +317,7 @@ public class WriteActivity extends AppCompatActivity {
                                 }
                                 dateSelectButton.setText(date);
                                 nCheckBox.setVisibility(View.VISIBLE);
+                                nCheckBox.setEnabled(true);
                             }
                             else Toast.makeText(getBaseContext(), R.string.select_future_date, Toast.LENGTH_SHORT).show();
                         }
@@ -338,32 +337,27 @@ public class WriteActivity extends AppCompatActivity {
                         if(checkBox.isChecked()) {
                             dateSelectButton.setEnabled(false);
                             dateSelectButton.setTextColor(Color.LTGRAY);
-
-//                            nCheckBox.setEnabled(false);
                             nCheckBox.setVisibility(View.INVISIBLE);
                             nCheckBox.setChecked(false);
-//                            timeSelectButton.setEnabled(false);
+                            timeSelectButton.setText(R.string.select_time);
                             timeSelectButton.setVisibility(View.INVISIBLE);
                             spinner.setVisibility(View.INVISIBLE);
                             spinner.setSelection(0);
                         } else {
                             dateSelectButton.setEnabled(true);
                             dateSelectButton.setTextColor(Color.BLACK);
-//                            nCheckBox.setEnabled(true);
                             if(!dateSelectButton.getText().toString().equals(SELECT_DATE))
                                 nCheckBox.setVisibility(View.VISIBLE);
                         }
                         break;
                     case NOTICE_TYPE:
                         if(!checkBox.isChecked()) {
-//                            timeSelectButton.setEnabled(false);
                             timeSelectButton.setVisibility(View.INVISIBLE);
+                            timeSelectButton.setText(R.string.select_time);
                             spinner.setVisibility(View.INVISIBLE);
                             spinner.setSelection(0);
                         } else {
-//                            timeSelectButton.setEnabled(true);
                             timeSelectButton.setVisibility(View.VISIBLE);
-                            timeSelectButton.setText(R.string.select_time);
                             spinner.setVisibility(View.VISIBLE);
                         }
                         break;
@@ -408,16 +402,22 @@ public class WriteActivity extends AppCompatActivity {
                 alarmTime = timeSelectButton.getText().toString();
                 cal = new GregorianCalendar();
                 Calendar sCal = new GregorianCalendar();
-                int sYear = Integer.parseInt(date.split(" - ")[0]);
-                int sMonth = Integer.parseInt(date.split(" - ")[0]);
-                int sDay = Integer.parseInt(date.split(" - ")[0]);
-                int sHour = Integer.parseInt(alarmTime.split(PM + " ")[1].split(" : ")[0]);
-                int sMinute = Integer.parseInt(alarmTime.split(" : ")[1]);
-                sCal.set(Calendar.YEAR, sYear);
-                sCal.set(Calendar.MONTH, sMonth-1);
-                sCal.set(Calendar.DAY_OF_MONTH, sDay);
-                sCal.set(Calendar.HOUR_OF_DAY, sHour);
-                sCal.set(Calendar.MINUTE, sMinute);
+                try {
+                    int sYear = Integer.parseInt(date.split(" - ")[0]);
+                    int sMonth = Integer.parseInt(date.split(" - ")[1]);
+                    int sDay = Integer.parseInt(date.split(" - ")[2]);
+                    String ap = alarmTime.split(" ")[0];
+                    int sHour = Integer.parseInt(alarmTime.split(" : ")[0].split(" ")[1]);
+                    if (ap.equals(PM) && sHour != 12) {
+                        sHour += 12;
+                    }
+                    int sMinute = Integer.parseInt(alarmTime.split(" : ")[1]);
+                    sCal.set(Calendar.YEAR, sYear);
+                    sCal.set(Calendar.MONTH, sMonth - 1);
+                    sCal.set(Calendar.DAY_OF_MONTH, sDay);
+                    sCal.set(Calendar.HOUR_OF_DAY, sHour);
+                    sCal.set(Calendar.MINUTE, sMinute);
+                }catch(Exception e){}
 
                 // 기한 없음 체크했을 때
                 if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
@@ -428,12 +428,13 @@ public class WriteActivity extends AppCompatActivity {
                 // 제목 없을 때
                 if (title.equals(""))
                         Toast.makeText(getBaseContext(), R.string.typetitle_toast, Toast.LENGTH_SHORT).show();
+
                 // 날짜 선택 안했을 때
                 else if(date.equals(SELECT_DATE))
                     Toast.makeText(getBaseContext(), R.string.dateselect_toast, Toast.LENGTH_SHORT).show();
 
                 // 선택된 시간이 과거일 때
-                else if(cal.getTimeInMillis() < sCal.getTimeInMillis())
+                else if(sCal.getTimeInMillis() < cal.getTimeInMillis())
                     Toast.makeText(getBaseContext(), R.string.select_future_time, Toast.LENGTH_SHORT).show();
 
                 // 반복만 선택하고 알림 시간 선택안했을 때

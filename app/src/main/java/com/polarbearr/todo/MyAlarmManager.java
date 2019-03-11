@@ -8,7 +8,6 @@ import android.content.Intent;
 import java.util.Calendar;
 
 import static com.polarbearr.todo.data.DatabaseHelper.ALARM_TIME_KEY;
-import static com.polarbearr.todo.data.DatabaseHelper.DATE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.REPEATABILITY_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
@@ -37,7 +36,6 @@ public class MyAlarmManager{
         calendar.set(Calendar.MINUTE, minute);
 
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
-//        alarmIntent.putExtra(DATE_KEY, date);
         alarmIntent.putExtra(ALARM_TIME_KEY, alarmTime);
         alarmIntent.putExtra(TITLE_KEY, title);
         alarmIntent.putExtra(CONTENT_KEY, content);
