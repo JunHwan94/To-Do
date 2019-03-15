@@ -11,7 +11,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.util.Log;
 import android.view.WindowManager;
 
 import java.util.Calendar;
@@ -33,6 +32,8 @@ public class AlarmService extends Service {
     private static final String CHANNEL_ID = "cid";
     private static final String CHANNEL_DESCRIPTION = "할일 알림";
     private static final long systemTimePerDay = 86400000L;
+
+    String alarmTime;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -56,7 +57,7 @@ public class AlarmService extends Service {
 
     public void processIntent(Intent intent){
         String date;
-        String alarmTime = intent.getStringExtra(ALARM_TIME_KEY);
+        alarmTime = intent.getStringExtra(ALARM_TIME_KEY);
         String title = intent.getStringExtra(TITLE_KEY);
         String content = intent.getStringExtra(CONTENT_KEY);
         String repeatability = intent.getStringExtra(REPEATABILITY_KEY);
@@ -153,11 +154,11 @@ public class AlarmService extends Service {
 
         builder.setSmallIcon(R.drawable.ic_stat_name).setTicker(APP_NAME)
                 .setWhen(System.currentTimeMillis()).setNumber(0)
-                .setContentTitle(title).setContentText(content)
+                .setContentTitle(title).setSubText("| " + alarmTime.replace(" : ", "시 ") + "분").setContentText(content)
                 .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE)
                 .setPriority(Notification.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent).setAutoCancel(true)
-                .setOngoing(true);
+                .setOngoing(false);
 
         notificationManager.notify(id, builder.build());
     }

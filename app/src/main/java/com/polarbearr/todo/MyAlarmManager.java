@@ -53,13 +53,11 @@ public class MyAlarmManager{
         final AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         // 선택한 날짜, 시간으로 알람 설정
-        new Thread(() -> {
-            alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.getTimeInMillis(),
-                    pendingIntent
-            );
-        }).start();
+        alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.getTimeInMillis(),
+                pendingIntent
+        );
     }
 
     public static void deleteAlarm(Context context, int id){

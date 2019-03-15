@@ -41,7 +41,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tabPadding="10dp"
         app:tabSelectedTextColor="@color/ic_launcher_background"
         app:tabTextAppearance="@style/tab_text"
         app:tabTextColor="@color/colorPrimaryDark">

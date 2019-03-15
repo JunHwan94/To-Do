@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity{
         // 리사이클러뷰 목록 업데이트
         if(data != null) {
             boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
-            if(Boolean.valueOf(databaseChangeFlag)) {
+            if(databaseChangeFlag) {
                 Bundle loadedData = DatabaseHelper.selectAllData(TODO_TABLE);
                 fragment[0].setTodoAdapter(loadedData);
                 loadedData = DatabaseHelper.selectAllData(COMPLETED_TABLE);

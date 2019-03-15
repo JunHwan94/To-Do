@@ -517,7 +517,7 @@ public class WriteActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(DATABASE_FLAG_KEY, databaseChangeFlag);
         setResult(RESULT_OK, intent);
         finish();

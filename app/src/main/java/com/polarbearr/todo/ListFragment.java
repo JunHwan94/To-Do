@@ -140,7 +140,7 @@ public class ListFragment extends Fragment {
                     intent.putExtra(ALARM_TIME_KEY, alarmTime);
                     intent.putExtra(REPEATABILITY_KEY, repeatability);
                     intent.putExtra(TYPE_KEY, fragmentType);
-
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivityForResult(intent, WRITE_REQUEST_CODE);
                 }
             });
