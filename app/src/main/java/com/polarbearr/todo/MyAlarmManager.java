@@ -14,7 +14,7 @@ import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.ID_KEY;
 
 public class MyAlarmManager{
-    static final String PM = "오후";
+    private static final String PM = "오후";
 
     public static void setAlarm(Context context, String date, String alarmTime, String title, String content, String repeatability, int id){
         String ap = alarmTime.split(" ")[0];

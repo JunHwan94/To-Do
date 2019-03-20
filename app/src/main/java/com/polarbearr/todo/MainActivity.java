@@ -18,6 +18,8 @@ import com.polarbearr.todo.data.DatabaseHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.polarbearr.todo.ListFragment.COMPLETED;
+import static com.polarbearr.todo.ListFragment.NOT_COMPLETED;
 import static com.polarbearr.todo.ListFragment.WRITE_REQUEST_CODE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
@@ -38,8 +40,8 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         DatabaseHelper.openDatabase(getApplicationContext(), TODO_DB);
-        DatabaseHelper.createTable(TODO_TABLE);
-        DatabaseHelper.createTable(COMPLETED_TABLE);
+        DatabaseHelper.createTable();
+//        DatabaseHelper.createTable(COMPLETED_TABLE);
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         pager = findViewById(R.id.pager);
@@ -112,9 +114,9 @@ public class MainActivity extends AppCompatActivity{
         if(data != null) {
             boolean databaseChangeFlag = data.getBooleanExtra(DATABASE_FLAG_KEY, false);
             if(databaseChangeFlag) {
-                Bundle loadedData = DatabaseHelper.selectAllData(TODO_TABLE);
+                Bundle loadedData = DatabaseHelper.selectAllData(NOT_COMPLETED);
                 fragment[0].setTodoAdapter(loadedData);
-                loadedData = DatabaseHelper.selectAllData(COMPLETED_TABLE);
+                loadedData = DatabaseHelper.selectAllData(COMPLETED);
                 fragment[1].setTodoAdapter(loadedData);
             }
         }

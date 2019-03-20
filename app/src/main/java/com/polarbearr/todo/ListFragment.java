@@ -35,6 +35,10 @@ import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
 public class ListFragment extends Fragment {
     static final String NOTHING = "기한 없음";
+    static final String isCompletedYn = "사용안함";
+    static final String COMPLETED = "Y";
+    static final String NOT_COMPLETED = "N";
+
     static final int WRITE_REQUEST_CODE = 101;
 
     private Bundle loadedData;
@@ -56,18 +60,15 @@ public class ListFragment extends Fragment {
 
         // 플로팅버튼 설정
         fab = rootView.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        fab.setOnClickListener(v-> {
                 Intent intent = new Intent(getContext(), WriteActivity.class);
 
                 // DB테이블에 행 하나라도 있으면 id를 조회해서 해당 id를 넘겨줌, 작성할때 +1
                 if(count != 0) {
-                    int greatestId = DatabaseHelper.selectGreatestId(TODO_TABLE);
+                    int greatestId = DatabaseHelper.selectGreatestId();
                     intent.putExtra(GREATEST_ID_KEY, greatestId);
                 }
                 startActivityForResult(intent, WRITE_REQUEST_CODE);
-            }
         });
         DisplayMetrics metrics = getMetrics(getContext());
         setButtonPosition(metrics, fab);
@@ -89,11 +90,11 @@ public class ListFragment extends Fragment {
         switch(fragmentType){
             case 0:
                 // 할 일 데이터베이스에서 불러오기
-                loadedData = DatabaseHelper.selectAllData(TODO_TABLE);
+                loadedData = DatabaseHelper.selectAllData(NOT_COMPLETED);
                 break;
             case 1:
                 // 완료한 일 데이터베이스에서 불러오기
-                loadedData = DatabaseHelper.selectAllData(COMPLETED_TABLE);
+                loadedData = DatabaseHelper.selectAllData(COMPLETED);
                 fab.setVisibility(View.INVISIBLE);
                 break;
         }
@@ -116,7 +117,7 @@ public class ListFragment extends Fragment {
                 if(date.equals(DATE_NOT_SELECTED)) date = NOTHING;
                 int id = itemBundle.getInt(ID_KEY);
 
-                item = new TodoItem(title, content, date, alarmTime, repeatability, id);
+                item = new TodoItem(title, content, date, alarmTime, repeatability, isCompletedYn, id);
                 adapter.addItem(item);
             }
             count = adapter.getItemCount();
@@ -140,7 +141,7 @@ public class ListFragment extends Fragment {
                     intent.putExtra(ALARM_TIME_KEY, alarmTime);
                     intent.putExtra(REPEATABILITY_KEY, repeatability);
                     intent.putExtra(TYPE_KEY, fragmentType);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivityForResult(intent, WRITE_REQUEST_CODE);
                 }
             });

@@ -10,13 +10,15 @@ public class TodoItem implements Parcelable {
     private String date;
     private String alarmTime;
     private String repeatability;
+    private String isCompletedYn;
 
-    public TodoItem(String title, String content, String date, String alarmTime, String repeatability, int id) {
+    public TodoItem(String title, String content, String date, String alarmTime, String repeatability, String isCompletedYn, int id) {
         this.title = title;
         this.content = content;
         this.date = date;
         this.alarmTime = alarmTime;
         this.repeatability = repeatability;
+        this.isCompletedYn = isCompletedYn;
         this.id = id;
     }
 
@@ -26,6 +28,7 @@ public class TodoItem implements Parcelable {
         date = in.readString();
         alarmTime = in.readString();
         repeatability = in.readString();
+        isCompletedYn = in.readString();
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
@@ -44,48 +47,28 @@ public class TodoItem implements Parcelable {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getContent() {
         return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     public String getDate() {
         return date;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public String getAlarmTime() {
         return alarmTime;
-    }
-
-    public void setAlarmTime(String alarmTime) {
-        this.alarmTime = alarmTime;
     }
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getRepeatability() {
         return repeatability;
     }
 
-    public void setRepeatability(String repeatability) {
-        this.repeatability = repeatability;
+    public String getIsCompletedYn() {
+        return isCompletedYn;
     }
 
     @Override
@@ -100,5 +83,6 @@ public class TodoItem implements Parcelable {
         dest.writeString(date);
         dest.writeString(alarmTime);
         dest.writeString(repeatability);
+        dest.writeString(isCompletedYn);
     }
 }

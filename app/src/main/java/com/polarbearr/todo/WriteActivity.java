@@ -24,7 +24,8 @@ import com.polarbearr.todo.data.TodoItem;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
+import static com.polarbearr.todo.ListFragment.COMPLETED;
+import static com.polarbearr.todo.ListFragment.NOT_COMPLETED;
 import static com.polarbearr.todo.data.DatabaseHelper.REPEATABILITY_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
@@ -33,7 +34,6 @@ import static com.polarbearr.todo.data.DatabaseHelper.DATE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.ALARM_TIME_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.GREATEST_ID_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
-import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.ListFragment.NOTHING;
 
 public class WriteActivity extends AppCompatActivity {
@@ -55,6 +55,7 @@ public class WriteActivity extends AppCompatActivity {
     private boolean isNew = true;
     private boolean databaseChangeFlag = false;
     private int fragmentType;
+    private String isCompletedYn;
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
     public static final String TYPE_KEY = "type";
@@ -167,6 +168,7 @@ public class WriteActivity extends AppCompatActivity {
         }
         // + 버튼을 눌러서 WriteActivity 실행했을 때
         else {
+            isCompletedYn = NOT_COMPLETED;
             id = intent.getIntExtra(GREATEST_ID_KEY, 0) + 1;
             deleteButton.setVisibility(View.INVISIBLE);
             completeButton.setVisibility(View.INVISIBLE);
@@ -377,14 +379,7 @@ public class WriteActivity extends AppCompatActivity {
 
     // 데이터 삭제
     public void deleteItem(){
-        switch(fragmentType){
-            case 0:
-                DatabaseHelper.deleteData(TODO_TABLE, id);
-                break;
-            case 1:
-                DatabaseHelper.deleteData(COMPLETED_TABLE, id);
-                break;
-        }
+        DatabaseHelper.deleteData(id);
 
         MyAlarmManager.deleteAlarm(getApplicationContext(), id);
         databaseChangeFlag = true;
@@ -449,7 +444,7 @@ public class WriteActivity extends AppCompatActivity {
             }
 
             public void writeTodo(String type){
-                TodoItem item = new TodoItem(title, content, date, alarmTime, repeatability, id);
+                TodoItem item = new TodoItem(title, content, date, alarmTime, repeatability, isCompletedYn, id);
                 processData(item, type);
                 if(nCheckBox.isChecked() && !timeSelectButton.getText().toString().equals(SELECT_TIME))
                     MyAlarmManager.setAlarm(getApplicationContext(), date, alarmTime, title, content, repeatability, id);
@@ -461,10 +456,10 @@ public class WriteActivity extends AppCompatActivity {
                 giveData.putParcelable(TODO_ITEM, item);
                 switch (type){
                     case INSERT_TYPE:
-                        DatabaseHelper.insertData(TODO_TABLE, giveData);
+                        DatabaseHelper.insertData(giveData);
                         break;
                     case UPDATE_TYPE:
-                        DatabaseHelper.updateData(TODO_TABLE, giveData);
+                        DatabaseHelper.updateData(giveData);
                         break;
                 }
                 databaseChangeFlag = true;
@@ -475,39 +470,25 @@ public class WriteActivity extends AppCompatActivity {
     // 완료, 미완료버튼 이벤트 처리
     public void setCompleteOrNotButtonListener(Button button){
         button.setOnClickListener(v -> {
-            String tableName1 = "";
             switch(fragmentType){
                 case 0:
-                    tableName1 = COMPLETED_TABLE;
+                    isCompletedYn = COMPLETED;
                     break;
                 case 1:
-                    tableName1 = TODO_TABLE;
+                    isCompletedYn = NOT_COMPLETED;
                     break;
             }
-            final String tableName = tableName1;
-
-            // 기존 목록에서 삭제
-            deleteItem();
-
-            // 반대 목록에 추가
-            try {
-                id = DatabaseHelper.selectGreatestId(tableName) + 1;
-            }catch(Exception e){
-                id = 1;
-            }
-
             Bundle giveData = new Bundle();
             title = tvTitle.getText().toString();
             content = tvContent.getText().toString();
             date = dateSelectButton.getText().toString();
             date = date.equals(SELECT_DATE) ? DATE_NOT_SELECTED : date;
-
             // 기한 없음 체크했을 때
-            if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
+            date = dCheckBox.isChecked() ? DATE_NOT_SELECTED : date;
 
-            TodoItem item = new TodoItem(title, content, date, SELECT_TIME, repeatability, id);
+            TodoItem item = new TodoItem(title, content, date, SELECT_TIME, repeatability, isCompletedYn, id);
             giveData.putParcelable(TODO_ITEM, item);
-            DatabaseHelper.insertData(tableName, giveData);
+            DatabaseHelper.updateData(giveData);
 
             databaseChangeFlag = true;
             onBackPressed();
@@ -517,7 +498,6 @@ public class WriteActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
-//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(DATABASE_FLAG_KEY, databaseChangeFlag);
         setResult(RESULT_OK, intent);
         finish();

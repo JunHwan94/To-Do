@@ -154,7 +154,7 @@ public class AlarmService extends Service {
 
         builder.setSmallIcon(R.drawable.ic_stat_name).setTicker(APP_NAME)
                 .setWhen(System.currentTimeMillis()).setNumber(0)
-                .setContentTitle(title).setSubText("| " + alarmTime.replace(" : ", "시 ") + "분").setContentText(content)
+                .setContentTitle(title).setSubText("| " + alarmTime).setContentText(content)
                 .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE)
                 .setPriority(Notification.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent).setAutoCancel(true)
