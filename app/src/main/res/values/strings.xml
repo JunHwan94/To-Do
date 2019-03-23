@@ -3,6 +3,8 @@
     <string name="tab_text_1">할 일</string>
     <string name="tab_text_2">완료한 일</string>
 
+    <string name="title">제목</string>
+    <string name="content">내용</string>
     <string name="finish_toast">뒤로 버튼을 한 번 더 누르면\n종료됩니다</string>
     <string name="save_toast">저장 완료</string>
     <string name="typetitle_toast">제목을 입력하세요</string>

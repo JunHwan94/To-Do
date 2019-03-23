@@ -2,13 +2,12 @@ package com.polarbearr.todo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,7 @@ import android.view.WindowManager;
 import com.polarbearr.todo.data.DatabaseHelper;
 import com.polarbearr.todo.data.TodoAdapter;
 import com.polarbearr.todo.data.TodoItem;
+import com.polarbearr.todo.databinding.FragmentListBinding;
 
 import static com.polarbearr.todo.MainActivity.TODO_KEY;
 import static com.polarbearr.todo.WriteActivity.TYPE_KEY;
@@ -40,25 +40,22 @@ public class ListFragment extends Fragment {
     static final int WRITE_REQUEST_CODE = 101;
 
     private Bundle loadedData;
-    private RecyclerView recyclerView;
-    private FloatingActionButton fab;
 
     private int count;
     private int fragmentType;
+    private FragmentListBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_list, container, false);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_list, container, false);
 
         // 리사이클러뷰 설정
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        recyclerView = rootView.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(layoutManager);
+        binding.recyclerView.setLayoutManager(layoutManager);
 
         // 플로팅버튼 설정
-        fab = rootView.findViewById(R.id.fab);
-        fab.setOnClickListener(v-> {
+        binding.fab.setOnClickListener(v-> {
                 Intent intent = new Intent(getContext(), WriteActivity.class);
 
                 // DB테이블에 행 하나라도 있으면 id를 조회해서 해당 id를 넘겨줌, 작성할때 +1
@@ -69,7 +66,7 @@ public class ListFragment extends Fragment {
                 startActivityForResult(intent, WRITE_REQUEST_CODE);
         });
         DisplayMetrics metrics = getMetrics(getContext());
-        setButtonPosition(metrics, fab);
+        setButtonPosition(metrics, binding.fab);
         
         // 프래그먼트 구분해서 데이터 설정
         Bundle bundle = getArguments();
@@ -78,7 +75,7 @@ public class ListFragment extends Fragment {
         // 리사이클러뷰에 어댑터 설정
         setTodoAdapter(loadedData);
 
-        return rootView;
+        return binding.getRoot();
     }
 
     // 목록 테이블 구분해서 데이터베이스에서 로드
@@ -93,7 +90,7 @@ public class ListFragment extends Fragment {
             case 1:
                 // 완료한 일 데이터베이스에서 불러오기
                 loadedData = DatabaseHelper.selectAllData(COMPLETED);
-                fab.setVisibility(View.INVISIBLE);
+                binding.fab.setVisibility(View.INVISIBLE);
                 break;
         }
     }
@@ -140,7 +137,7 @@ public class ListFragment extends Fragment {
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivityForResult(intent, WRITE_REQUEST_CODE);
             });
-            recyclerView.setAdapter(adapter);
+            binding.recyclerView.setAdapter(adapter);
         }
     }
 

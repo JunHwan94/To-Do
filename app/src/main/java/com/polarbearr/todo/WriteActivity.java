@@ -1,13 +1,20 @@
 package com.polarbearr.todo;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -20,6 +27,7 @@ import android.widget.Toast;
 
 import com.polarbearr.todo.data.DatabaseHelper;
 import com.polarbearr.todo.data.TodoItem;
+import com.polarbearr.todo.databinding.ActivityWriteBinding;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -37,14 +45,6 @@ import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.ListFragment.NOTHING;
 
 public class WriteActivity extends AppCompatActivity {
-    private EditText tvTitle;
-    private EditText tvContent;
-    private Button dateSelectButton;
-    private CheckBox dCheckBox;
-    private static Button timeSelectButton;
-    private CheckBox nCheckBox;
-    private Spinner spinner;
-
     private Calendar cal;
     private String title;
     private String content;
@@ -56,6 +56,8 @@ public class WriteActivity extends AppCompatActivity {
     private boolean databaseChangeFlag = false;
     private int fragmentType;
     private String isCompletedYn;
+    private InputMethodManager imm;
+    private SoftKeyboard softKeyboard;
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
     public static final String TYPE_KEY = "type";
@@ -74,23 +76,13 @@ public class WriteActivity extends AppCompatActivity {
     static final String EVERY_MONTH = "매월";
     static final String EVERY_YEAR = "매년";
 
+    private static ActivityWriteBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_write);
-
-        tvTitle = findViewById(R.id.title);
-        tvContent = findViewById(R.id.content);
-        Button deleteButton = findViewById(R.id.deleteButton);
-        Button saveButton = findViewById(R.id.saveButton);
-        Button completeButton = findViewById(R.id.completeButton);
-        Button restoreButton = findViewById(R.id.restoreButton);
-        Button backButton = findViewById(R.id.backButton);
-        dateSelectButton = findViewById(R.id.dateSelectButton);
-        dCheckBox = findViewById(R.id.dCheckBox);
-        timeSelectButton = findViewById(R.id.timeSelectButton);
-        nCheckBox = findViewById(R.id.nCheckBox);
-        spinner = findViewById(R.id.spinner);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_write);
+        binding.setLifecycleOwner(this);
 
         Intent intent = getIntent();
         title = intent.getStringExtra(TITLE_KEY);
@@ -100,12 +92,14 @@ public class WriteActivity extends AppCompatActivity {
         id = intent.getIntExtra(ID_KEY, 0);
         fragmentType = intent.getIntExtra(TYPE_KEY, 0);
         repeatability = intent.getStringExtra(REPEATABILITY_KEY);
+        imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        softKeyboard = new SoftKeyboard(binding.rootView, imm);
 
         String[] items = {NO_REPEAT, EVERY_DAY, EVERY_WEEK, EVERY_MONTH, EVERY_YEAR};
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, items);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spinnerAdapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        binding.spinner.setAdapter(spinnerAdapter);
+        binding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 repeatability = items[position];
@@ -128,20 +122,20 @@ public class WriteActivity extends AppCompatActivity {
         // 목록의 아이템을 눌러서 WriteActivity 실행했을 때 뷰 처리
         if(id != 0){
             isNew = false;
-            tvTitle.setText(title);
-            tvContent.setText(content);
+            binding.etTitle.setText(title);
+            binding.etContent.setText(content);
 
             // 기한 있는 할일이면
             if(!date.equals(NOTHING)) {
-                dateSelectButton.setText(date);
-                timeSelectButton.setText(alarmTime);
-                nCheckBox.setVisibility(View.VISIBLE);
+                binding.dateSelectButton.setText(date);
+                binding.timeSelectButton.setText(alarmTime);
+                binding.nCheckBox.setVisibility(View.VISIBLE);
                 // 알람 설정돼있으면 알림설정 체크박스 미리 체크
                 if(!alarmTime.equals(SELECT_TIME)) {
-                    nCheckBox.setChecked(true);
-                    timeSelectButton.setEnabled(true);  // 시간 선택 버튼 활성
-                    timeSelectButton.setVisibility(View.VISIBLE);
-                    spinner.setVisibility(View.VISIBLE); // 스피너도 보이게
+                    binding.nCheckBox.setChecked(true);
+                    binding.timeSelectButton.setEnabled(true);  // 시간 선택 버튼 활성
+                    binding.timeSelectButton.setVisibility(View.VISIBLE);
+                    binding.spinner.setVisibility(View.VISIBLE); // 스피너도 보이게
 
                     int spIndex = 0;
                     switch(repeatability){
@@ -158,76 +152,99 @@ public class WriteActivity extends AppCompatActivity {
                             spIndex = 4;
                             break;
                     }
-                    spinner.setSelection(spIndex);
+                    binding.spinner.setSelection(spIndex);
                 }
             } else {    // 기한 없을 때 기한없음 체크박스 미리 체크상태로, 날짜선택 버튼 사용불가상태로
-                dCheckBox.setChecked(true);
-                dateSelectButton.setEnabled(false);
-                dateSelectButton.setTextColor(Color.LTGRAY);
+                binding.dCheckBox.setChecked(true);
+                binding.dateSelectButton.setEnabled(false);
+                binding.dateSelectButton.setTextColor(Color.LTGRAY);
             }
         }
         // + 버튼을 눌러서 WriteActivity 실행했을 때
         else {
             isCompletedYn = NOT_COMPLETED;
             id = intent.getIntExtra(GREATEST_ID_KEY, 0) + 1;
-            deleteButton.setVisibility(View.INVISIBLE);
-            completeButton.setVisibility(View.INVISIBLE);
+            binding.deleteButton.setVisibility(View.INVISIBLE);
+            binding.completeButton.setVisibility(View.INVISIBLE);
         }
 
         switch(fragmentType){
             case 0: // 할일 이면
-                restoreButton.setVisibility(View.INVISIBLE);
+                binding.restoreButton.setVisibility(View.INVISIBLE);
                 break;
             case 1: // 완료한 일이면
-                tvTitle.setEnabled(false);
-                tvContent.setEnabled(false);
-                tvContent.setHint("");
-                dateSelectButton.setEnabled(false);
-                dCheckBox.setEnabled(false);
-                nCheckBox.setVisibility(View.INVISIBLE);
-                completeButton.setVisibility(View.INVISIBLE);
-                saveButton.setVisibility(View.INVISIBLE);
+                binding.etTitle.setEnabled(false);
+                binding.etContent.setEnabled(false);
+                binding.etContent.setHint("");
+                binding.dateSelectButton.setEnabled(false);
+                binding.dCheckBox.setEnabled(false);
+                binding.nCheckBox.setVisibility(View.INVISIBLE);
+                binding.completeButton.setVisibility(View.INVISIBLE);
+                binding.saveButton.setVisibility(View.INVISIBLE);
 
-                if(dCheckBox.isChecked())
-                    dateSelectButton.setVisibility(View.INVISIBLE);
-                else dCheckBox.setVisibility(View.INVISIBLE);
+                if(binding.dCheckBox.isChecked())
+                    binding.dateSelectButton.setVisibility(View.INVISIBLE);
+                else binding.dCheckBox.setVisibility(View.INVISIBLE);
                 break;
         }
 
         // 저장 버튼 이벤트
-        setSaveButtonListener(saveButton);
+        setSaveButtonListener(binding.saveButton);
 
         // 삭제 버튼 이벤트
-        setDeleteButtonListener(deleteButton);
+        setDeleteButtonListener(binding.deleteButton);
 
         // 완료, 미완료 버튼 이벤트
-        setCompleteOrNotButtonListener(completeButton);
-        setCompleteOrNotButtonListener(restoreButton);
+        setCompleteOrNotButtonListener(binding.completeButton);
+        setCompleteOrNotButtonListener(binding.restoreButton);
 
         // 날짜 선택 버튼 이벤트 처리
         setDateSelectButtonListener();
 
         // 기한 없음 체크박스 클릭이벤트
-        setCheckBoxListener(dCheckBox, DATE_TYPE);
+        setCheckBoxListener(binding.dCheckBox, DATE_TYPE);
 
         // 시간 선택 버튼 이벤트 처리
         setTimeSelectButtonListener();
 
         // 알림설정 체크박스 클릭이벤트
-        setCheckBoxListener(nCheckBox, NOTICE_TYPE);
+        setCheckBoxListener(binding.nCheckBox, NOTICE_TYPE);
 
         // 뒤로가기 버튼 이벤트
-        backButton.setOnClickListener( v-> onBackPressed() );
+        binding.backButton.setOnClickListener( v-> onBackPressed() );
+
+        // 링크처리
+        Linkify.addLinks(binding.etContent, Linkify.ALL);
+
+        // 키보드 숨길 때 이벤트
+        softKeyboard.setSoftKeyboardCallback(new SoftKeyboard.SoftKeyboardChanged() {
+            @Override
+            public void onSoftKeyboardHide() {
+                new Handler(Looper.getMainLooper()).post(()->{
+                    binding.rootView.clearFocus();
+                    Linkify.addLinks(binding.etContent, Linkify.ALL);
+                });
+            }
+
+            @Override
+            public void onSoftKeyboardShow() {}
+        });
+
+        // 내용 창 길게 터치 시 이벤트
+        binding.etContent.setOnLongClickListener(v->  {
+            softKeyboard.openSoftKeyboard();
+            return false;
+        });
     }
 
     // 시간 선택 버튼 이벤트 처리
     private void setTimeSelectButtonListener(){
-        timeSelectButton.setOnClickListener(new View.OnClickListener() {
+        binding.timeSelectButton.setOnClickListener(new View.OnClickListener() {
             int sHour;
             int sMinute;
             @Override
             public void onClick(View v) {
-                if(!dateSelectButton.getText().toString().equals(SELECT_DATE)) {
+                if(!binding.dateSelectButton.getText().toString().equals(SELECT_DATE)) {
                     cal = new GregorianCalendar();
                     sHour = cal.get(Calendar.HOUR_OF_DAY);
                     sMinute = cal.get(Calendar.MINUTE);
@@ -239,9 +256,9 @@ public class WriteActivity extends AppCompatActivity {
                     new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                            int sYear = Integer.parseInt(dateSelectButton.getText().toString().split(" - ")[0]);
-                            int sMonth = Integer.parseInt(dateSelectButton.getText().toString().split(" - ")[1]);
-                            int sDay = Integer.parseInt(dateSelectButton.getText().toString().split(" - ")[2]);
+                            int sYear = Integer.parseInt(binding.dateSelectButton.getText().toString().split(" - ")[0]);
+                            int sMonth = Integer.parseInt(binding.dateSelectButton.getText().toString().split(" - ")[1]);
+                            int sDay = Integer.parseInt(binding.dateSelectButton.getText().toString().split(" - ")[2]);
                             int year = cal.get(Calendar.YEAR);
                             int month = cal.get(Calendar.MONTH);
                             int day = cal.get(Calendar.DAY_OF_MONTH);
@@ -261,7 +278,7 @@ public class WriteActivity extends AppCompatActivity {
     }
 
     // 시간 선택 버튼 텍스트 설정
-    public static void setTimeSelectButtonText(int hourOfDay, int minute){
+    public void setTimeSelectButtonText(int hourOfDay, int minute){
         // 오전
         String noticeTime = AM + " " + hourOfDay + " : " + minute;
         int hour = hourOfDay;
@@ -274,18 +291,18 @@ public class WriteActivity extends AppCompatActivity {
             if (minute < 10)
                 noticeTime = PM + " " + hour + " : 0" + minute;
         }
-        timeSelectButton.setText(noticeTime);
+        binding.timeSelectButton.setText(noticeTime);
     }
 
     // 날짜 선택 버튼 이벤트 처리
     private void setDateSelectButtonListener() {
-        dateSelectButton.setOnClickListener(new View.OnClickListener() {
+        binding.dateSelectButton.setOnClickListener(new View.OnClickListener() {
             int sYear;
             int sMonth;
             int sDay;
             @Override
             public void onClick(View v) {
-                String buttonText = dateSelectButton.getText().toString();
+                String buttonText = binding.dateSelectButton.getText().toString();
                 cal = new GregorianCalendar();
                 // 날짜 이미 선택한 상태면 텍스트에서 불러오기
                 if(!buttonText.equals(SELECT_DATE)){
@@ -317,15 +334,16 @@ public class WriteActivity extends AppCompatActivity {
                                     if (dayOfMonth < 10)
                                         date = year + " - " + (month + 1) + " - 0" + dayOfMonth;
                                 }
-                                dateSelectButton.setText(date);
-                                nCheckBox.setVisibility(View.VISIBLE);
-                                nCheckBox.setEnabled(true);
+                                binding.dateSelectButton.setText(date);
+                                binding.nCheckBox.setVisibility(View.VISIBLE);
+                                binding.nCheckBox.setEnabled(true);
                             }
                             else Toast.makeText(getBaseContext(), R.string.select_future_date, Toast.LENGTH_SHORT).show();
                         }
 
                     };
         });
+
     }
 
     // 체크박스 클릭 이벤트 처리
@@ -335,30 +353,30 @@ public class WriteActivity extends AppCompatActivity {
             switch (type){
                 case DATE_TYPE:
                     if(checkBox.isChecked()) {
-                        dateSelectButton.setEnabled(false);
-                        dateSelectButton.setTextColor(Color.LTGRAY);
-                        nCheckBox.setVisibility(View.INVISIBLE);
-                        nCheckBox.setChecked(false);
-                        timeSelectButton.setText(R.string.select_time);
-                        timeSelectButton.setVisibility(View.INVISIBLE);
-                        spinner.setVisibility(View.INVISIBLE);
-                        spinner.setSelection(0);
+                        binding.dateSelectButton.setEnabled(false);
+                        binding.dateSelectButton.setTextColor(Color.LTGRAY);
+                        binding.nCheckBox.setVisibility(View.INVISIBLE);
+                        binding.nCheckBox.setChecked(false);
+                        binding.timeSelectButton.setText(R.string.select_time);
+                        binding.timeSelectButton.setVisibility(View.INVISIBLE);
+                        binding.spinner.setVisibility(View.INVISIBLE);
+                        binding.spinner.setSelection(0);
                     } else {
-                        dateSelectButton.setEnabled(true);
-                        dateSelectButton.setTextColor(Color.BLACK);
-                        if(!dateSelectButton.getText().toString().equals(SELECT_DATE))
-                            nCheckBox.setVisibility(View.VISIBLE);
+                        binding.dateSelectButton.setEnabled(true);
+                        binding.dateSelectButton.setTextColor(Color.BLACK);
+                        if(!binding.dateSelectButton.getText().toString().equals(SELECT_DATE))
+                            binding.nCheckBox.setVisibility(View.VISIBLE);
                     }
                     break;
                 case NOTICE_TYPE:
                     if(!checkBox.isChecked()) {
-                        timeSelectButton.setVisibility(View.INVISIBLE);
-                        timeSelectButton.setText(R.string.select_time);
-                        spinner.setVisibility(View.INVISIBLE);
-                        spinner.setSelection(0);
+                        binding.timeSelectButton.setVisibility(View.INVISIBLE);
+                        binding.timeSelectButton.setText(R.string.select_time);
+                        binding.spinner.setVisibility(View.INVISIBLE);
+                        binding.spinner.setSelection(0);
                     } else {
-                        timeSelectButton.setVisibility(View.VISIBLE);
-                        spinner.setVisibility(View.VISIBLE);
+                        binding.timeSelectButton.setVisibility(View.VISIBLE);
+                        binding.spinner.setVisibility(View.VISIBLE);
                     }
                     break;
             }
@@ -388,10 +406,10 @@ public class WriteActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                title = tvTitle.getText().toString();
-                content = tvContent.getText().toString();
-                date = dateSelectButton.getText().toString();
-                alarmTime = timeSelectButton.getText().toString();
+                title = binding.etTitle.getText().toString();
+                content = binding.etContent.getText().toString();
+                date = binding.dateSelectButton.getText().toString();
+                alarmTime = binding.timeSelectButton.getText().toString();
                 cal = new GregorianCalendar();
                 Calendar sCal = new GregorianCalendar();
                 try {
@@ -412,10 +430,10 @@ public class WriteActivity extends AppCompatActivity {
                 }catch(Exception e){}
 
                 // 기한 없음 체크했을 때
-                if(dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
+                if(binding.dCheckBox.isChecked()) date = DATE_NOT_SELECTED;
 
                 // 알림 설정 체크 안돼있으면 텍스트 복구
-                if(!nCheckBox.isChecked()) alarmTime = SELECT_TIME;
+                if(!binding.nCheckBox.isChecked()) alarmTime = SELECT_TIME;
 
                 // 제목 없을 때
                 if (title.equals(""))
@@ -430,7 +448,7 @@ public class WriteActivity extends AppCompatActivity {
                     Toast.makeText(getBaseContext(), R.string.select_future_time, Toast.LENGTH_SHORT).show();
 
                 // 반복만 선택하고 알림 시간 선택안했을 때
-                else if(timeSelectButton.getText().toString().equals(SELECT_TIME) && !repeatability.equals(NO_REPEAT))
+                else if(binding.timeSelectButton.getText().toString().equals(SELECT_TIME) && !repeatability.equals(NO_REPEAT))
                     Toast.makeText(getBaseContext(), R.string.select_time_please, Toast.LENGTH_SHORT).show();
 
                 // 수정할 때
@@ -444,7 +462,7 @@ public class WriteActivity extends AppCompatActivity {
                 isCompletedYn = NOT_COMPLETED;
                 TodoItem item = new TodoItem(title, content, date, alarmTime, repeatability, isCompletedYn, id);
                 processData(item, type);
-                if(nCheckBox.isChecked() && !timeSelectButton.getText().toString().equals(SELECT_TIME))
+                if(binding.nCheckBox.isChecked() && !binding.timeSelectButton.getText().toString().equals(SELECT_TIME))
                     MyAlarmManager.setAlarm(getApplicationContext(), date, alarmTime, title, content, repeatability, id);
 
                 onBackPressed();
@@ -477,12 +495,12 @@ public class WriteActivity extends AppCompatActivity {
                     break;
             }
             Bundle giveData = new Bundle();
-            title = tvTitle.getText().toString();
-            content = tvContent.getText().toString();
-            date = dateSelectButton.getText().toString();
+            title = binding.etTitle.getText().toString();
+            content = binding.etContent.getText().toString();
+            date = binding.dateSelectButton.getText().toString();
             date = date.equals(SELECT_DATE) ? DATE_NOT_SELECTED : date;
             // 기한 없음 체크했을 때
-            date = dCheckBox.isChecked() ? DATE_NOT_SELECTED : date;
+            date = binding.dCheckBox.isChecked() ? DATE_NOT_SELECTED : date;
 
             TodoItem item = new TodoItem(title, content, date, SELECT_TIME, repeatability, isCompletedYn, id);
             giveData.putParcelable(TODO_ITEM, item);
@@ -499,5 +517,19 @@ public class WriteActivity extends AppCompatActivity {
         intent.putExtra(DATABASE_FLAG_KEY, databaseChangeFlag);
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    // 키보드 숨기기
+    public void hideKeyboard(Activity activity) {
+        View view = activity.getCurrentFocus();
+        if (view != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        softKeyboard.unRegisterSoftKeyboardCallback();
     }
 }

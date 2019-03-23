@@ -1,57 +1,52 @@
 package com.polarbearr.todo;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.polarbearr.todo.data.DatabaseHelper;
+import com.polarbearr.todo.databinding.ActivityMainBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.polarbearr.todo.ListFragment.COMPLETED;
 import static com.polarbearr.todo.ListFragment.NOT_COMPLETED;
-import static com.polarbearr.todo.ListFragment.WRITE_REQUEST_CODE;
 import static com.polarbearr.todo.WriteActivity.DATABASE_FLAG_KEY;
-import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
-import static com.polarbearr.todo.data.DatabaseHelper.ID_KEY;
-import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 
 public class MainActivity extends AppCompatActivity{
-    private static ViewPager pager;
     private static long backPressedTime = 0;
 
     static final String TODO_KEY = "0";
     static final String TODO_DB = "todoDB";
 
-    ListFragment[] fragment;
+    private ListFragment[] fragment;
+    private ActivityMainBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        binding.setLifecycleOwner(this);
 
         DatabaseHelper.openDatabase(getApplicationContext(), TODO_DB);
         DatabaseHelper.createTable();
 
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        pager = findViewById(R.id.pager);
-        pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(pager));
+        binding.pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabs));
+        binding.tabs.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(binding.pager));
 
         setFragment();
 
-        AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
+        binding.adView.loadAd(adRequest);
 
 //        Intent intent = getIntent();
 //        processIntent(intent);
@@ -81,7 +76,7 @@ public class MainActivity extends AppCompatActivity{
             adapter.addItem(fragment[i]);
         }
 
-        pager.setAdapter(adapter);
+        binding.pager.setAdapter(adapter);
     }
 
     static class ListPagerAdapter extends FragmentStatePagerAdapter {
