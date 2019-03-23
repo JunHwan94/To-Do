@@ -22,7 +22,6 @@ import com.polarbearr.todo.data.TodoItem;
 import static com.polarbearr.todo.MainActivity.TODO_KEY;
 import static com.polarbearr.todo.WriteActivity.TYPE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.ALARM_TIME_KEY;
-import static com.polarbearr.todo.data.DatabaseHelper.COMPLETED_TABLE;
 import static com.polarbearr.todo.data.DatabaseHelper.CONTENT_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.DATE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.GREATEST_ID_KEY;
@@ -30,7 +29,6 @@ import static com.polarbearr.todo.data.DatabaseHelper.ID_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.REPEATABILITY_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
-import static com.polarbearr.todo.data.DatabaseHelper.TODO_TABLE;
 import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
 public class ListFragment extends Fragment {
@@ -122,28 +120,25 @@ public class ListFragment extends Fragment {
             }
             count = adapter.getItemCount();
 
-            adapter.setOnItemClickListener(new TodoAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(TodoAdapter.ViewHolder holder, View view, int position) {
-                    TodoItem item = adapter.getItem(position);
-                    String title = item.getTitle();
-                    String content = item.getContent();
-                    String date = item.getDate();
-                    String alarmTime = item.getAlarmTime();
-                    String repeatability = item.getRepeatability();
-                    int id = item.getId();
+            adapter.setOnItemClickListener((holder, view, position)->{
+                TodoItem gotItem = adapter.getItem(position);
+                String title = gotItem.getTitle();
+                String content = gotItem.getContent();
+                String date = gotItem.getDate();
+                String alarmTime = gotItem.getAlarmTime();
+                String repeatability = gotItem.getRepeatability();
+                int id = gotItem.getId();
 
-                    Intent intent = new Intent(getContext().getApplicationContext(), WriteActivity.class);
-                    intent.putExtra(TITLE_KEY, title);
-                    intent.putExtra(CONTENT_KEY, content);
-                    intent.putExtra(ID_KEY, id);
-                    intent.putExtra(DATE_KEY, date);
-                    intent.putExtra(ALARM_TIME_KEY, alarmTime);
-                    intent.putExtra(REPEATABILITY_KEY, repeatability);
-                    intent.putExtra(TYPE_KEY, fragmentType);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    startActivityForResult(intent, WRITE_REQUEST_CODE);
-                }
+                Intent intent = new Intent(getContext().getApplicationContext(), WriteActivity.class);
+                intent.putExtra(TITLE_KEY, title);
+                intent.putExtra(CONTENT_KEY, content);
+                intent.putExtra(ID_KEY, id);
+                intent.putExtra(DATE_KEY, date);
+                intent.putExtra(ALARM_TIME_KEY, alarmTime);
+                intent.putExtra(REPEATABILITY_KEY, repeatability);
+                intent.putExtra(TYPE_KEY, fragmentType);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivityForResult(intent, WRITE_REQUEST_CODE);
             });
             recyclerView.setAdapter(adapter);
         }

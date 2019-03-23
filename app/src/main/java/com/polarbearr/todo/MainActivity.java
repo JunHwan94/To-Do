@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity{
 
         DatabaseHelper.openDatabase(getApplicationContext(), TODO_DB);
         DatabaseHelper.createTable();
-//        DatabaseHelper.createTable(COMPLETED_TABLE);
 
         TabLayout tabLayout = findViewById(R.id.tabs);
         pager = findViewById(R.id.pager);

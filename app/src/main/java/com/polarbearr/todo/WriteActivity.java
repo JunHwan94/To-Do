@@ -331,39 +331,36 @@ public class WriteActivity extends AppCompatActivity {
     // 체크박스 클릭 이벤트 처리
     private void setCheckBoxListener(final CheckBox checkBox, final String type){
         checkBox.setClickable(true);
-        checkBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (type){
-                    case DATE_TYPE:
-                        if(checkBox.isChecked()) {
-                            dateSelectButton.setEnabled(false);
-                            dateSelectButton.setTextColor(Color.LTGRAY);
-                            nCheckBox.setVisibility(View.INVISIBLE);
-                            nCheckBox.setChecked(false);
-                            timeSelectButton.setText(R.string.select_time);
-                            timeSelectButton.setVisibility(View.INVISIBLE);
-                            spinner.setVisibility(View.INVISIBLE);
-                            spinner.setSelection(0);
-                        } else {
-                            dateSelectButton.setEnabled(true);
-                            dateSelectButton.setTextColor(Color.BLACK);
-                            if(!dateSelectButton.getText().toString().equals(SELECT_DATE))
-                                nCheckBox.setVisibility(View.VISIBLE);
-                        }
-                        break;
-                    case NOTICE_TYPE:
-                        if(!checkBox.isChecked()) {
-                            timeSelectButton.setVisibility(View.INVISIBLE);
-                            timeSelectButton.setText(R.string.select_time);
-                            spinner.setVisibility(View.INVISIBLE);
-                            spinner.setSelection(0);
-                        } else {
-                            timeSelectButton.setVisibility(View.VISIBLE);
-                            spinner.setVisibility(View.VISIBLE);
-                        }
-                        break;
-                }
+        checkBox.setOnClickListener( v -> {
+            switch (type){
+                case DATE_TYPE:
+                    if(checkBox.isChecked()) {
+                        dateSelectButton.setEnabled(false);
+                        dateSelectButton.setTextColor(Color.LTGRAY);
+                        nCheckBox.setVisibility(View.INVISIBLE);
+                        nCheckBox.setChecked(false);
+                        timeSelectButton.setText(R.string.select_time);
+                        timeSelectButton.setVisibility(View.INVISIBLE);
+                        spinner.setVisibility(View.INVISIBLE);
+                        spinner.setSelection(0);
+                    } else {
+                        dateSelectButton.setEnabled(true);
+                        dateSelectButton.setTextColor(Color.BLACK);
+                        if(!dateSelectButton.getText().toString().equals(SELECT_DATE))
+                            nCheckBox.setVisibility(View.VISIBLE);
+                    }
+                    break;
+                case NOTICE_TYPE:
+                    if(!checkBox.isChecked()) {
+                        timeSelectButton.setVisibility(View.INVISIBLE);
+                        timeSelectButton.setText(R.string.select_time);
+                        spinner.setVisibility(View.INVISIBLE);
+                        spinner.setSelection(0);
+                    } else {
+                        timeSelectButton.setVisibility(View.VISIBLE);
+                        spinner.setVisibility(View.VISIBLE);
+                    }
+                    break;
             }
         });
     }
@@ -444,6 +441,7 @@ public class WriteActivity extends AppCompatActivity {
             }
 
             public void writeTodo(String type){
+                isCompletedYn = NOT_COMPLETED;
                 TodoItem item = new TodoItem(title, content, date, alarmTime, repeatability, isCompletedYn, id);
                 processData(item, type);
                 if(nCheckBox.isChecked() && !timeSelectButton.getText().toString().equals(SELECT_TIME))

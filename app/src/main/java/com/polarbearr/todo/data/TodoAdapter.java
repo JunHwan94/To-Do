@@ -84,16 +84,14 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder>{
             tvContent = itemView.findViewById(R.id.content);
             tvDate = itemView.findViewById(R.id.date);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+            itemView.setOnClickListener(view -> {
                     int position = getAdapterPosition();
 
                     if(listener != null){
                         listener.onItemClick(ViewHolder.this, view, position);
                     }
                 }
-            });
+            );
 
             DisplayMetrics metrics = getMetrics(context);
             setViewSize(metrics, tvTitle, TITLE);

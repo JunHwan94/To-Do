@@ -48,7 +48,7 @@ public class DatabaseHelper {
         }
     }
 
-    // 테이블 전체 조회
+    // 할일, 완료 조회
     public static Bundle selectAllData(String isCompletedYn){
         Bundle data = new Bundle();
         Cursor cursor;
