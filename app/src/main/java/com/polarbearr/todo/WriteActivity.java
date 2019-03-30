@@ -8,6 +8,7 @@ import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.RequiresPermission;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -57,7 +58,6 @@ public class WriteActivity extends AppCompatActivity {
     private int fragmentType;
     private String isCompletedYn;
     private InputMethodManager imm;
-    private SoftKeyboard softKeyboard;
 
     public static final String DATABASE_FLAG_KEY = "dbkey";
     public static final String TYPE_KEY = "type";
@@ -76,7 +76,7 @@ public class WriteActivity extends AppCompatActivity {
     static final String EVERY_MONTH = "매월";
     static final String EVERY_YEAR = "매년";
 
-    private static ActivityWriteBinding binding;
+    private ActivityWriteBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +93,6 @@ public class WriteActivity extends AppCompatActivity {
         fragmentType = intent.getIntExtra(TYPE_KEY, 0);
         repeatability = intent.getStringExtra(REPEATABILITY_KEY);
         imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-        softKeyboard = new SoftKeyboard(binding.rootView, imm);
 
         String[] items = {NO_REPEAT, EVERY_DAY, EVERY_WEEK, EVERY_MONTH, EVERY_YEAR};
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, items);
@@ -216,25 +215,12 @@ public class WriteActivity extends AppCompatActivity {
         // 링크처리
         Linkify.addLinks(binding.etContent, Linkify.ALL);
 
-        // 키보드 숨길 때 이벤트
-        softKeyboard.setSoftKeyboardCallback(new SoftKeyboard.SoftKeyboardChanged() {
-            @Override
-            public void onSoftKeyboardHide() {
-                new Handler(Looper.getMainLooper()).post(()->{
-                    binding.rootView.clearFocus();
-                    Linkify.addLinks(binding.etContent, Linkify.ALL);
-                });
-            }
-
-            @Override
-            public void onSoftKeyboardShow() {}
+        binding.etContent.setOnFocusChangeListener((v, hasFocus)->{
+            if(hasFocus)
+                imm.showSoftInput(v, 0);
         });
 
-        // 내용 창 길게 터치 시 이벤트
-        binding.etContent.setOnLongClickListener(v->  {
-            softKeyboard.openSoftKeyboard();
-            return false;
-        });
+        binding.rootView.setOnClickListener(v-> hideKeyboard(v) );
     }
 
     // 시간 선택 버튼 이벤트 처리
@@ -302,6 +288,8 @@ public class WriteActivity extends AppCompatActivity {
             int sDay;
             @Override
             public void onClick(View v) {
+                hideKeyboard(v);
+
                 String buttonText = binding.dateSelectButton.getText().toString();
                 cal = new GregorianCalendar();
                 // 날짜 이미 선택한 상태면 텍스트에서 불러오기
@@ -520,16 +508,9 @@ public class WriteActivity extends AppCompatActivity {
     }
 
     // 키보드 숨기기
-    public void hideKeyboard(Activity activity) {
-        View view = activity.getCurrentFocus();
-        if (view != null) {
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-    }
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        softKeyboard.unRegisterSoftKeyboardCallback();
+    public void hideKeyboard(View v) {
+        v.getRootView().clearFocus();
+        imm.hideSoftInputFromWindow(v.getRootView().getWindowToken(), 0);
+        Linkify.addLinks(binding.etContent, Linkify.ALL);
     }
 }

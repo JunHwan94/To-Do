@@ -9,10 +9,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 import com.polarbearr.todo.data.DatabaseHelper;
 import com.polarbearr.todo.data.TodoAdapter;
@@ -31,19 +34,32 @@ import static com.polarbearr.todo.data.DatabaseHelper.TITLE_KEY;
 import static com.polarbearr.todo.data.DatabaseHelper.TODO_ITEM;
 import static com.polarbearr.todo.WriteActivity.DATE_NOT_SELECTED;
 
-public class ListFragment extends Fragment {
+public class ListFragment extends Fragment implements View.OnTouchListener{
     static final String NOTHING = "기한 없음";
     static final String isCompletedYn = "사용안함";
     static final String COMPLETED = "Y";
     static final String NOT_COMPLETED = "N";
-
     static final int WRITE_REQUEST_CODE = 101;
+    public final int HORIZONTAL_MIN_DISTANCE = 10;
+    public final int VERTICAL_MIN_DISTANCE = 10;
+    private static final String LOG_TAG = "SwipeDetector";
 
     private Bundle loadedData;
-
     private int count;
     private int fragmentType;
+    int _xDelta;
+    int _yDelta;
     private FragmentListBinding binding;
+    private float downX, downY, upX, upY;
+    private Action mSwipeDetected = Action.None;
+
+    public static enum Action {
+        LR, // Left to Right
+        RL, // Right to Left
+        TB, // Top to bottom
+        BT, // Bottom to Top
+        None // when no action was detected
+    }
 
     @Nullable
     @Override
@@ -55,15 +71,18 @@ public class ListFragment extends Fragment {
         binding.recyclerView.setLayoutManager(layoutManager);
 
         // 플로팅버튼 설정
+        binding.fab.setOnTouchListener(this);
         binding.fab.setOnClickListener(v-> {
+            if(!swipeDetected()) {
                 Intent intent = new Intent(getContext(), WriteActivity.class);
 
                 // DB테이블에 행 하나라도 있으면 id를 조회해서 해당 id를 넘겨줌, 작성할때 +1
-                if(count != 0) {
+                if (count != 0) {
                     int greatestId = DatabaseHelper.selectGreatestId();
                     intent.putExtra(GREATEST_ID_KEY, greatestId);
                 }
                 startActivityForResult(intent, WRITE_REQUEST_CODE);
+            }
         });
         DisplayMetrics metrics = getMetrics(getContext());
         setButtonPosition(metrics, binding.fab);
@@ -152,8 +171,8 @@ public class ListFragment extends Fragment {
 
     // 버튼 위치 설정
     public static void setButtonPosition(DisplayMetrics metrics, View view){
-        view.setX(metrics.widthPixels * 8 / 10);
-        view.setY(metrics.heightPixels * 75 / 100);
+        view.setX(metrics.widthPixels * 8F / 10);
+        view.setY(metrics.heightPixels * 75F / 100);
     }
 
     @Override
@@ -164,5 +183,87 @@ public class ListFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    public boolean swipeDetected() {
+        return mSwipeDetected != Action.None;
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+
+        final int X = (int) event.getRawX();
+        final int Y = (int) event.getRawY();
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                FrameLayout.LayoutParams lParams = (FrameLayout.LayoutParams) view.getLayoutParams();
+                _xDelta = X - lParams.leftMargin;
+                _yDelta = Y - lParams.topMargin;
+                break;
+            case MotionEvent.ACTION_UP:
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                break;
+            case MotionEvent.ACTION_MOVE:
+                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) view
+                        .getLayoutParams();
+                layoutParams.leftMargin = X - _xDelta;
+                layoutParams.topMargin = Y - _yDelta;
+                layoutParams.rightMargin = -250;
+                layoutParams.bottomMargin = -250;
+                view.setLayoutParams(layoutParams);
+                break;
+        }
+        binding.rootLayout.invalidate();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                downX = event.getX();
+                downY = event.getY();
+                mSwipeDetected = Action.None;
+                return false; // allow other events like Click to be processed
+            }
+            case MotionEvent.ACTION_MOVE: {
+                upX = event.getX();
+                upY = event.getY();
+
+                float deltaX = downX - upX;
+                float deltaY = downY - upY;
+
+                // horizontal swipe detection
+                if (Math.abs(deltaX) > HORIZONTAL_MIN_DISTANCE) {
+                    // left or right
+                    if (deltaX < 0) {
+                        Log.i(LOG_TAG, "Swipe Left to Right");
+                        mSwipeDetected = Action.LR;
+                        return true;
+                    }
+                    if (deltaX > 0) {
+                        Log.i(LOG_TAG, "Swipe Right to Left");
+                        mSwipeDetected = Action.RL;
+                        return true;
+                    }
+                } else
+
+                    // vertical swipe detection
+                    if (Math.abs(deltaY) > VERTICAL_MIN_DISTANCE) {
+                        // top or down
+                        if (deltaY < 0) {
+                            Log.i(LOG_TAG, "Swipe Top to Bottom");
+                            mSwipeDetected = Action.TB;
+                            return false;
+                        }
+                        if (deltaY > 0) {
+                            Log.i(LOG_TAG, "Swipe Bottom to Top");
+                            mSwipeDetected = Action.BT;
+                            return false;
+                        }
+                    }
+                return true;
+            }
+        }
+        return false;
     }
 }

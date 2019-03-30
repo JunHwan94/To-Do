@@ -82,11 +82,11 @@ public class MainActivity extends AppCompatActivity{
     static class ListPagerAdapter extends FragmentStatePagerAdapter {
         List<Fragment> items = new ArrayList<>();
 
-        public ListPagerAdapter(FragmentManager fm) {
+        ListPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
-        public void addItem(Fragment item){
+        void addItem(Fragment item){
             items.add(item);
         }
 
